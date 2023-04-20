@@ -8,6 +8,8 @@
 
 #include <optional>
 
+#include "Shader.h"
+
 struct temp {
   std::optional<uint32_t> var;
 
@@ -21,7 +23,7 @@ float vertices[] = {
     0.5f, 0.5f, 0.0f, 1.0, 0.0, 0.0,   // top right
     0.5f, -0.5f, 0.0f, 0.0, 1.0, 0.0,  // bottom right
     -0.5f, -0.5f, 0.0f, 0.0, 0.0, 1.0, // bottom left
-    -0.5f, 0.5f, 0.0f, 0.0, 0.0, 0.0,  // top left
+    -0.5f, 0.5f, 0.0f, 1.0, 0.0, 0.0,  // top left
 };
 
 unsigned int indices[] = {
@@ -29,15 +31,6 @@ unsigned int indices[] = {
     0, 1, 3, // first triangle
     1, 2, 3  // second triangle
 };
-
-std::string loadShaderString( const std::string& filepath ) {
-  std::ostringstream stringStream;
-  std::ifstream inputFileStream( filepath );
-  stringStream << inputFileStream.rdbuf();
-
-  std::string shaderString( stringStream.str() );
-  return shaderString;
-}
 
 class Application {
 public:
@@ -85,56 +78,7 @@ public:
     // Loading, Compiling and creating shaders
     // ================================================================================
 
-    // Create vertex shader
-    const std::string& vertexShaderString = loadShaderString( "./shaders/vertex.glsl" );
-    const char* vertexShaderSource        = vertexShaderString.c_str();
-
-    mGLVertexShader = glCreateShader( GL_VERTEX_SHADER );
-    glShaderSource( mGLVertexShader, 1, &vertexShaderSource, nullptr );
-    glCompileShader( mGLVertexShader );
-
-    // Shader validation
-    int success;
-    char infoLog[512];
-    glGetShaderiv( mGLVertexShader, GL_COMPILE_STATUS, &success );
-    if ( !success ) {
-      glGetShaderInfoLog( mGLVertexShader, 512, nullptr, infoLog );
-      std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // Create fragment shader
-    const std::string& fragmentShaderString = loadShaderString( "./shaders/fragment.glsl" );
-    const char* fragmentShaderSource        = fragmentShaderString.c_str();
-
-    mGLFragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-    glShaderSource( mGLFragmentShader, 1, &fragmentShaderSource, nullptr );
-    glCompileShader( mGLFragmentShader );
-
-    // Shader validation
-    glGetShaderiv( mGLFragmentShader, GL_COMPILE_STATUS, &success );
-    if ( !success ) {
-      glGetShaderInfoLog( mGLFragmentShader, 512, nullptr, infoLog );
-      std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // Creating shader program
-    // Shader program:
-    //    A shader program object is the final linked version of multiple shaders combined. To
-    //    use the recently compiled shaders we have to link them to a shader program object and then activate this
-    //    shader program when rendering objects. The activated shader program's shaders will be used when we issue
-    //    render calls. When linking the shaders into a program it links the outputs of each shader to the inputs of the
-    //    next shader. This is also where you'll get linking errors if your outputs and inputs do not match.
-    mGLProgram = glCreateProgram();
-    glAttachShader( mGLProgram, mGLVertexShader );
-    glAttachShader( mGLProgram, mGLFragmentShader );
-    glLinkProgram( mGLProgram );
-
-    // Program validation
-    glGetProgramiv( mGLProgram, GL_LINK_STATUS, &success );
-    if ( !success ) {
-      glGetProgramInfoLog( mGLProgram, 512, nullptr, infoLog );
-      std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
+    mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
 
     // ================================================================================
 
@@ -180,7 +124,7 @@ public:
     glEnableVertexAttribArray( 1 );        // Enable this attribute array
 
     // 5. Draw
-    glUseProgram( mGLProgram );
+    mShader->use();
     glBindVertexArray( mGlVAO );
     glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
@@ -214,8 +158,8 @@ public:
       //      // Configure shader uniforms
       //      auto timeValue          = (float) glfwGetTime();
       //      float greenValue        = ( std::sin( timeValue ) / 2.0f ) + 0.5f;
-      //      int colorAttribLocation = glGetUniformLocation( mGLProgram, "color" );
-      glUseProgram( mGLProgram );
+      //      int colorAttribLocation = glGetUniformLocation( mShader->getId(), "color" );
+      mShader->use();
       //      glUniform4f( colorAttribLocation, 0.0f, greenValue, 0.0f, 1.0f );
 
       // Draw VAOs
@@ -238,12 +182,13 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // OpenGL vars
-  unsigned int mGLVertexShader;
-  unsigned int mGLFragmentShader;
-  unsigned int mGLProgram;
+
   unsigned int mGlVBO;
   unsigned int mGlVAO;
   unsigned int mGlEBO;
+
+  //
+  Shader* mShader = nullptr;
 };
 
 int main() {
