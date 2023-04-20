@@ -40,11 +40,8 @@ public:
   }
 
   ~Application() {
+    delete mShader;
     glfwTerminate();
-
-    // De-init OpenGL
-    // glDeleteShader( mGLVertexShader );
-    // glDeleteShader( mGLFragmentShader );
   }
 
   int initWindow() {

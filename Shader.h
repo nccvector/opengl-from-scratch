@@ -29,20 +29,35 @@ public:
     validateProgram( mGLProgram );
   }
 
+  ~Shader()
+  {
+    glDeleteShader(mGLVertexShader);
+    glDeleteShader(mGLFragmentShader);
+    glDeleteProgram(mGLProgram);
+  }
+
   const unsigned int getId() {
     return mGLProgram;
   }
 
-  static const void use(const unsigned int program)
-  {
-    glUseProgram(program);
+  static void use( const unsigned int program ) {
+    glUseProgram( program );
   }
 
-  const void use()
-  {
-    use(mGLProgram);
+  void use() {
+    use( mGLProgram );
   }
 
+  void setBool( const std::string& name, bool value ) {
+    glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (int) value );
+  }
+
+  void setInt( const std::string& name, int value ) {
+    glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), value );
+  }
+  void setFloat( const std::string& name, float value ) {
+    glUniform1f( glGetUniformLocation( mGLProgram, name.c_str() ), value );
+  }
 
 private:
   static std::string loadShaderString( const std::string& filepath ) {
