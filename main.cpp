@@ -4,16 +4,30 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 
-// Loading shaders
-#include <string>
-#include <sstream>
-#include <fstream>
+#include <optional>
+
+struct temp {
+  std::optional<uint32_t> var;
+
+  bool complete() {
+    return var.has_value();
+  }
+};
 
 float vertices[] = {
-    -0.5f, -0.5f, 0.0f, // x y z
-    0.5f, -0.5f, 0.0f,  // x y z
-    0.0f, 0.5f, 0.0f    // x y z
+    // positions                      // Colors
+    0.5f, 0.5f, 0.0f, 1.0, 0.0, 0.0,   // top right
+    0.5f, -0.5f, 0.0f, 0.0, 1.0, 0.0,  // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0, 0.0, 1.0, // bottom left
+    -0.5f, 0.5f, 0.0f, 0.0, 0.0, 0.0,  // top left
+};
+
+unsigned int indices[] = {
+    // note that we start from 0!
+    0, 1, 3, // first triangle
+    1, 2, 3  // second triangle
 };
 
 std::string loadShaderString( const std::string& filepath ) {
@@ -29,15 +43,15 @@ class Application {
 public:
   explicit Application( const char* title = "My Application" ) : mTitle( title ) {
     initWindow();
-    initGlad( mWidth, mHeight );
+    initGL( mWidth, mHeight );
   }
 
   ~Application() {
     glfwTerminate();
 
     // De-init OpenGL
-    //glDeleteShader( mGLVertexShader );
-    //glDeleteShader( mGLFragmentShader );
+    // glDeleteShader( mGLVertexShader );
+    // glDeleteShader( mGLFragmentShader );
   }
 
   int initWindow() {
@@ -60,7 +74,7 @@ public:
     return 0;
   }
 
-  int initGlad( int width, int height ) {
+  int initGL( int width, int height ) {
     if ( !gladLoadGLLoader( (GLADloadproc) glfwGetProcAddress ) ) {
       std::cout << "Failed to initialize GLAD" << std::endl;
       return -1;
@@ -124,32 +138,51 @@ public:
 
     // ================================================================================
 
+    int numAttributes;
+    glGetIntegerv( GL_MAX_VERTEX_ATTRIBS, &numAttributes );
+    std::cout << "Maximum nr of vertex attributes supported: " << numAttributes << std::endl;
+
     // Create a vertex buffer
     glGenBuffers( 1, &mGlVBO );
 
     // Create a vertex array object
-    glGenVertexArrays( 1, &mGlVAO);
+    glGenVertexArrays( 1, &mGlVAO );
+
+    // Create an index buffer
+    glGenBuffers( 1, &mGlEBO );
 
     // 1. Bind VAO
     glBindVertexArray( mGlVAO );
-    // 2. Bind VBO and copy data
+    // 2. Bind VBO and copy vertex data
     glBindBuffer( GL_ARRAY_BUFFER, mGlVBO );
     glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
-    // 3. Linking vertex attributes (how the data is layed out in memory)
+    // 3. Bind EBO and copy index data
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mGlEBO );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW );
+
+    // 4. Linking vertex attributes (how the data is layed out in memory)
     // OpenGL does not know how the vertices are layed out in memory
     // To let the OpenGL know how to connect the vertices, we need to specify
-    glVertexAttribPointer( 0, // Corresponds to the location = 0 in vertex shader
-        3,                    // Entries per vertex data (x y and z)
-        GL_FLOAT,             // Type of entry
-        GL_FALSE,             // Specifies whether the data should be normalized or not
-        3 * sizeof( float ),  // Stride size in bytes
-        (void*) 0 );          // Where the position data begins in the buffer
-    glEnableVertexAttribArray( 0 );
+    glVertexAttribPointer( 0,       // Corresponds to the location = 0 in vertex shader
+        3,                          // Entries per vertex data (x y and z)
+        GL_FLOAT,                   // Type of entry
+        GL_FALSE,                   // Specifies whether the data should be normalized or not
+        6 * sizeof( float ),        // Stride size in bytes
+        (void*) 0 );                // offset: Where the position data begins in the buffer
+    glEnableVertexAttribArray( 0 ); // Enable this attribute array
+    // Create one more for color data layout
+    glVertexAttribPointer( 1,              // Corresponds to the location = 0 in vertex shader
+        3,                                 // Entries per vertex data (x y and z)
+        GL_FLOAT,                          // Type of entry
+        GL_FALSE,                          // Specifies whether the data should be normalized or not
+        6 * sizeof( float ),               // Stride size in bytes
+        (void*) ( 3 * sizeof( float ) ) ); // offset: Where the position data begins in the buffer
+    glEnableVertexAttribArray( 1 );        // Enable this attribute array
 
-    // 4. Draw
+    // 5. Draw
     glUseProgram( mGLProgram );
-    glBindVertexArray( mGlVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray( mGlVAO );
+    glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
     return 0;
   }
@@ -172,15 +205,26 @@ public:
       // Physics
 
       // Rendering
-      glClearColor( 1.0f, 0.0f, 1.0f, 1.0f );
+      // Painting background
+      glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
       glClear( GL_COLOR_BUFFER_BIT );
 
-      // 4. Draw
-      glUseProgram( mGLProgram );
-      glBindVertexArray( mGlVAO);
-      glDrawArrays(GL_TRIANGLES, 0, 3);
+      // Draw call
 
-      // Events and swap buffers
+      //      // Configure shader uniforms
+      //      auto timeValue          = (float) glfwGetTime();
+      //      float greenValue        = ( std::sin( timeValue ) / 2.0f ) + 0.5f;
+      //      int colorAttribLocation = glGetUniformLocation( mGLProgram, "color" );
+      glUseProgram( mGLProgram );
+      //      glUniform4f( colorAttribLocation, 0.0f, greenValue, 0.0f, 1.0f );
+
+      // Draw VAOs
+      glBindVertexArray( mGlVAO );
+      glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+      // Unbind VAOs
+      glBindVertexArray( 0 ); // unbind
+
+      // Swap buffers and poll I/O events
       glfwSwapBuffers( mWindow );
       glfwPollEvents();
     }
@@ -199,6 +243,7 @@ private:
   unsigned int mGLProgram;
   unsigned int mGlVBO;
   unsigned int mGlVAO;
+  unsigned int mGlEBO;
 };
 
 int main() {
@@ -206,7 +251,7 @@ int main() {
   Application app;
   app.run();
 
-  std::cout << "I am alive\n";
+  std::cout << "Exit Success.\n";
 
   return 0;
 }

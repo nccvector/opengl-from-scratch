@@ -9,7 +9,7 @@ find_package(glfw3 REQUIRED)
 # include opengl wrangler
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include)
 
-add_executable(ofs main.cpp ext/glad/src/glad.c)
+add_executable(ofs main.cpp ext/glad/src/glad.c Shader.cpp Shader.h)
 target_link_libraries(ofs ${OPENGL_LIBRARIES} glfw)
 
 file(COPY shaders DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
