@@ -16,6 +16,13 @@
 // opengl
 #include <glad/glad.h>
 
+// GLM
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 class Shader {
 public:
   Shader( const std::string& vertexPath, const std::string& fragmentPath ) {
@@ -29,11 +36,10 @@ public:
     validateProgram( mGLProgram );
   }
 
-  ~Shader()
-  {
-    glDeleteShader(mGLVertexShader);
-    glDeleteShader(mGLFragmentShader);
-    glDeleteProgram(mGLProgram);
+  ~Shader() {
+    glDeleteShader( mGLVertexShader );
+    glDeleteShader( mGLFragmentShader );
+    glDeleteProgram( mGLProgram );
   }
 
   const unsigned int getId() {
@@ -59,7 +65,33 @@ public:
     glUniform1f( glGetUniformLocation( mGLProgram, name.c_str() ), value );
   }
 
-private:
+  void setTexture( const std::string& name, int value ) {
+    glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), value );
+  }
+
+  void setModelMatrix( const glm::mat4& modelMatrix ) {
+    glUniformMatrix4fv( glGetUniformLocation( mGLProgram, "Model" ), 1, GL_FALSE, glm::value_ptr( modelMatrix ) );
+  }
+
+  void setViewMatrix( const glm::mat4& viewMatrix ) {
+    glUniformMatrix4fv( glGetUniformLocation( mGLProgram, "View" ), 1, GL_FALSE, glm::value_ptr( viewMatrix ) );
+  }
+
+  void setProjectionMatrix( const glm::mat4& projectionMatrix ) {
+    glUniformMatrix4fv(
+        glGetUniformLocation( mGLProgram, "Projection" ), 1, GL_FALSE, glm::value_ptr( projectionMatrix ) );
+  }
+
+  void setModelViewProjectionMatrix(
+      const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix ) {
+    setModelMatrix( modelMatrix );
+    setViewMatrix( viewMatrix );
+    setProjectionMatrix( projectionMatrix );
+  }
+
+  // Statics
+  // static const Texture loadTexture() {}
+
   static std::string loadShaderString( const std::string& filepath ) {
     std::ostringstream stringStream;
     std::ifstream inputFileStream( filepath );

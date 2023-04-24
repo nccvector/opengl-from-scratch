@@ -4,11 +4,18 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <cmath>
+
+// GLM
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <optional>
 
 #include "Shader.h"
+#include "Texture.h"
 
 struct temp {
   std::optional<uint32_t> var;
@@ -19,17 +26,25 @@ struct temp {
 };
 
 float vertices[] = {
-    // positions                      // Colors
-    0.5f, 0.5f, 0.0f, 1.0, 0.0, 0.0,   // top right
-    0.5f, -0.5f, 0.0f, 0.0, 1.0, 0.0,  // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0, 0.0, 1.0, // bottom left
-    -0.5f, 0.5f, 0.0f, 1.0, 0.0, 0.0,  // top left
+    // positions
+    0.5f, 0.5f, 0.0f,   // top right vertex
+    1.0, 0.0, 0.0,      // color
+    0.75, 0.75,         // uv
+    0.5f, -0.5f, 0.0f,  // bottom right vertex
+    0.0, 1.0, 0.0,      // color
+    0.75, 0.25,         // uv
+    -0.5f, -0.5f, 0.0f, // bottom left vertex
+    0.0, 0.0, 1.0,      // color
+    0.25, 0.25,         // uv
+    -0.5f, 0.5f, 0.0f,  // top left vertex
+    1.0, 0.0, 0.0,      // color
+    0.25, 0.75          // uv
 };
 
 unsigned int indices[] = {
     // note that we start from 0!
-    0, 1, 3, // first triangle
-    1, 2, 3  // second triangle
+    0, 3, 1, // first triangle
+    1, 3, 2  // second triangle
 };
 
 class Application {
@@ -77,6 +92,12 @@ public:
 
     mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
 
+    // Create a texture
+    Texture texture( "textures/UVMap.png" );
+
+    // TODO: Raise error that pointer is null and continue, dont let the application crash!
+    mShader->setTexture( "Texture", texture.getId() );
+
     // ================================================================================
 
     int numAttributes;
@@ -108,20 +129,37 @@ public:
         3,                          // Entries per vertex data (x y and z)
         GL_FLOAT,                   // Type of entry
         GL_FALSE,                   // Specifies whether the data should be normalized or not
-        6 * sizeof( float ),        // Stride size in bytes
+        8 * sizeof( float ),        // Stride size in bytes
         (void*) 0 );                // offset: Where the position data begins in the buffer
     glEnableVertexAttribArray( 0 ); // Enable this attribute array
     // Create one more for color data layout
     glVertexAttribPointer( 1,              // Corresponds to the location = 0 in vertex shader
-        3,                                 // Entries per vertex data (x y and z)
+        3,                                 // Entries per vertex data (r g and b)
         GL_FLOAT,                          // Type of entry
         GL_FALSE,                          // Specifies whether the data should be normalized or not
-        6 * sizeof( float ),               // Stride size in bytes
+        8 * sizeof( float ),               // Stride size in bytes
         (void*) ( 3 * sizeof( float ) ) ); // offset: Where the position data begins in the buffer
     glEnableVertexAttribArray( 1 );        // Enable this attribute array
+    // Create one more for uv data layout
+    glVertexAttribPointer( 2,              // Corresponds to the location = 0 in vertex shader
+        2,                                 // Entries per vertex data (u and v)
+        GL_FLOAT,                          // Type of entry
+        GL_FALSE,                          // Specifies whether the data should be normalized or not
+        8 * sizeof( float ),               // Stride size in bytes
+        (void*) ( 6 * sizeof( float ) ) ); // offset: Where the position data begins in the buffer
+    glEnableVertexAttribArray( 2 );        // Enable this attribute array
 
     // 5. Draw
-    mShader->use();
+    if ( mShader ) {
+      mShader->use();
+    }
+    // else throw an error
+
+    // Culling options
+    glEnable( GL_CULL_FACE );
+    glCullFace( GL_BACK );
+    glFrontFace( GL_CCW );
+
     glBindVertexArray( mGlVAO );
     glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
@@ -139,7 +177,17 @@ public:
   }
 
   void run() {
+    float timeLastFrame    = glfwGetTime();
+    float timeCurrentFrame = 0.0f;
+    float deltaTime        = 0.0f;
+
+    float degPerSec   = 10.0f;
+    float newRotation = 0.0f;
+
     while ( !glfwWindowShouldClose( mWindow ) ) {
+      timeCurrentFrame = glfwGetTime();
+      deltaTime        = timeCurrentFrame - timeLastFrame;
+
       // Inputs
       processInputs( mWindow );
 
@@ -149,6 +197,29 @@ public:
       // Painting background
       glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
       glClear( GL_COLOR_BUFFER_BIT );
+
+      // Applying scene transforms
+      newRotation += degPerSec * deltaTime;
+      glm::mat4 model = glm::mat4( 1.0f );
+      model           = glm::rotate( model, glm::radians( 0.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+
+      // Creating camera vector
+      glm::mat4 camera = glm::mat4( 1.0f );
+      glm::vec3 cameraPosition( 0.0f, 3.0f, 3.0f );
+      glm::vec3 lookAt( 0, 0, 0 );
+      glm::vec3 upVector( 0, 1, 0 );
+
+      // Provide the positions whereever you want to look in the scene, but inverse the transform because camera looks
+      // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
+      // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
+      camera = glm::lookAt( cameraPosition, lookAt, upVector );
+
+      // Applying render transforms
+      glm::mat4 projection =
+          glm::perspective( glm::radians( 45.0f ), (float) mWidth / (float) mHeight, 0.0001f, 100000.0f );
+
+      // Send transforms to the shader
+      mShader->setModelViewProjectionMatrix( model, camera, projection );
 
       // Draw call
 
@@ -168,6 +239,8 @@ public:
       // Swap buffers and poll I/O events
       glfwSwapBuffers( mWindow );
       glfwPollEvents();
+
+      timeLastFrame = timeCurrentFrame;
     }
   }
 
