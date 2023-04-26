@@ -209,7 +209,7 @@ public:
       glm::vec3 lookAt( 0, 0, 0 );
       glm::vec3 upVector( 0, 1, 0 );
 
-      // Provide the positions whereever you want to look in the scene, but inverse the transform because camera looks
+      // Provide the positions wherever you want to look in the scene, but inverse the transform because camera looks
       // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
       // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
       camera = glm::lookAt( cameraPosition, lookAt, upVector );
