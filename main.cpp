@@ -17,14 +17,6 @@
 #include "Shader.h"
 #include "Texture.h"
 
-struct temp {
-  std::optional<uint32_t> var;
-
-  bool complete() {
-    return var.has_value();
-  }
-};
-
 float vertices[] = {
     // positions
     0.5f, 0.5f, 0.0f,   // top right vertex

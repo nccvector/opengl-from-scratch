@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 
 #include "Shader.h"
+
 Shader::Shader( const std::string& vertexPath, const std::string& fragmentPath ) {
   mGLVertexShader = createVertexShader( vertexPath );
   validateShader( mGLVertexShader );
