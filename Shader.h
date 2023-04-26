@@ -28,7 +28,7 @@ public:
   [[maybe_unused]] void setInt( const std::string& name, int value ) const;
   [[maybe_unused]] void setFloat( const std::string& name, float value ) const;
 
-  void setTexture( const std::string& name, int value ) const;
+  void setTexture( const std::string& name, unsigned int value ) const;
   void setModelMatrix( const glm::mat4& modelMatrix ) const;
   void setViewMatrix( const glm::mat4& viewMatrix ) const;
   void setProjectionMatrix( const glm::mat4& projectionMatrix ) const;

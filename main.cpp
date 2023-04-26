@@ -1,21 +1,18 @@
 //
 // Created by vector on 23/04/17.
 //
+
+#include <iostream>
+#include <optional>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-
-// GLM
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <optional>
 
 #include "Shader.h"
 #include "Texture.h"
+
+// GLM
+#include <glm/gtc/matrix_transform.hpp>
 
 float vertices[] = {
     // positions
@@ -169,15 +166,14 @@ public:
   }
 
   void run() {
-    float timeLastFrame    = glfwGetTime();
-    float timeCurrentFrame = 0.0f;
-    float deltaTime        = 0.0f;
-
     float degPerSec   = 10.0f;
     float newRotation = 0.0f;
 
+    float timeCurrentFrame;
+    float deltaTime;
+    auto timeLastFrame = (float) glfwGetTime();
     while ( !glfwWindowShouldClose( mWindow ) ) {
-      timeCurrentFrame = glfwGetTime();
+      timeCurrentFrame = (float) glfwGetTime();
       deltaTime        = timeCurrentFrame - timeLastFrame;
 
       // Inputs
@@ -244,12 +240,11 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // OpenGL vars
+  unsigned int mGlVBO {};
+  unsigned int mGlVAO {};
+  unsigned int mGlEBO {};
 
-  unsigned int mGlVBO;
-  unsigned int mGlVAO;
-  unsigned int mGlEBO;
-
-  //
+  // Application vars
   Shader* mShader = nullptr;
 };
 
