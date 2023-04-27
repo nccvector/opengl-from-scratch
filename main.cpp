@@ -38,7 +38,7 @@ unsigned int indices[] = {
 
 class Application {
 public:
-  explicit Application( const char* title = "My Application" ) : mTitle( title ) {
+  explicit Application( const char* title = "My Application" ) : mTitle( title ), mWidth( 800 ), mHeight( 600 ) {
     initWindow();
     initGL( mWidth, mHeight );
   }
@@ -186,41 +186,38 @@ public:
       glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
       glClear( GL_COLOR_BUFFER_BIT );
 
-      // Applying scene transforms
-      newRotation += degPerSec * deltaTime;
-      glm::mat4 model = glm::mat4( 1.0f );
-      model           = glm::rotate( model, glm::radians( 0.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+      for (int i=0; i<4; i++){
+        // Applying scene transforms
+        newRotation += degPerSec * deltaTime;
+        glm::mat4 model = glm::mat4( 1.0f );
+        model           = glm::rotate( model, glm::radians( 0.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
 
-      // Creating camera vector
-      glm::mat4 camera = glm::mat4( 1.0f );
-      glm::vec3 cameraPosition( 0.0f, 3.0f, 3.0f );
-      glm::vec3 lookAt( 0, 0, 0 );
-      glm::vec3 upVector( 0, 1, 0 );
+        // Creating camera vector
+        glm::mat4 camera = glm::mat4( 1.0f );
+        glm::vec3 cameraPosition( 0.0f + (float)i, 3.0f, 3.0f );
+        glm::vec3 lookAt( 0, 0, 0 );
+        glm::vec3 upVector( 0, 1, 0 );
 
-      // Provide the positions wherever you want to look in the scene, but inverse the transform because camera looks
-      // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
-      // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
-      camera = glm::lookAt( cameraPosition, lookAt, upVector );
+        // Provide the positions wherever you want to look in the scene, but inverse the transform because camera looks
+        // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
+        // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
+        camera = glm::lookAt( cameraPosition, lookAt, upVector );
 
-      // Applying render transforms
-      glm::mat4 projection =
-          glm::perspective( glm::radians( 45.0f ), (float) mWidth / (float) mHeight, 0.0001f, 100000.0f );
+        // Applying render transforms
+        glm::mat4 projection =
+            glm::perspective( glm::radians( 45.0f ), (float) mWidth / (float) mHeight, 0.0001f, 100000.0f );
 
-      // Send transforms to the shader
-      mShader->setModelViewProjectionMatrix( model, camera, projection );
+        // Send transforms to the shader
+        mShader->setModelViewProjectionMatrix( model, camera, projection );
 
-      // Draw call
+        // Draw call
+        mShader->use();
 
-      //      // Configure shader uniforms
-      //      auto timeValue          = (float) glfwGetTime();
-      //      float greenValue        = ( std::sin( timeValue ) / 2.0f ) + 0.5f;
-      //      int colorAttribLocation = glGetUniformLocation( mShader->getId(), "color" );
-      mShader->use();
-      //      glUniform4f( colorAttribLocation, 0.0f, greenValue, 0.0f, 1.0f );
+        // Draw VAOs
+        glBindVertexArray( mGlVAO );
+        glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+      }
 
-      // Draw VAOs
-      glBindVertexArray( mGlVAO );
-      glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
       // Unbind VAOs
       glBindVertexArray( 0 ); // unbind
 
@@ -235,8 +232,8 @@ public:
 private:
   // Glfw vars
   const char* mTitle;
-  int mWidth          = 800;
-  int mHeight         = 600;
+  int mWidth;
+  int mHeight;
   GLFWwindow* mWindow = nullptr;
 
   // OpenGL vars
