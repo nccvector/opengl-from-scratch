@@ -14,6 +14,52 @@
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
 
+//to map image filenames to textureIds
+#include <string.h>
+#include <map>
+
+// assimp include files. These three are usually needed.
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/DefaultLogger.hpp>
+#include <assimp/LogStream.hpp>
+#include <fstream>
+
+// the global Assimp scene object
+const aiScene* g_scene = nullptr;
+
+// Create an instance of the Importer class
+Assimp::Importer importer;
+
+bool Import3DFromFile( const std::string &filename) {
+  // Check if file exists
+  std::ifstream fin(filename.c_str());
+  if(fin.fail()) {
+    std::string message = "Couldn't open file: " + filename;
+    std::wstring targetMessage;
+    //utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
+    std::cout << importer.GetErrorString() << std::endl;
+    return false;
+  }
+
+  fin.close();
+
+  g_scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Quality);
+
+  // If the import failed, report it
+  if (g_scene == nullptr) {
+    std::cout << importer.GetErrorString() << std::endl;
+    return false;
+  }
+
+  // Now we can access the file's contents.
+  std::cout << "Import of scene " << filename <<  " succeeded." << std::endl;
+
+  // We're done. Everything will be cleaned up by the importer destructor
+  return true;
+}
+
 float vertices[] = {
     // positions
     0.5f, 0.5f, 0.0f,   // top right vertex
@@ -246,6 +292,11 @@ private:
 };
 
 int main() {
+  Import3DFromFile("./models/cube.obj");
+
+  std::string name = g_scene->mMeshes[0]->mName.C_Str();
+  auto vertices = g_scene->mMeshes[0]->mVertices;
+  auto nextVerex = vertices[1];
 
   Application app;
   app.run();
