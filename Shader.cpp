@@ -43,7 +43,7 @@ void Shader::use( const unsigned int program ) {
   glUniform1f( glGetUniformLocation( mGLProgram, name.c_str() ), value );
 }
 void Shader::setTexture( const std::string& name, unsigned int value ) const {
-  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (GLint)value );
+  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (GLint) value );
 }
 void Shader::setModelMatrix( const glm::mat4& modelMatrix ) const {
   glUniformMatrix4fv( glGetUniformLocation( mGLProgram, "Model" ), 1, GL_FALSE, glm::value_ptr( modelMatrix ) );

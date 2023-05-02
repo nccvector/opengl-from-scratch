@@ -10,74 +10,60 @@
 
 #include "Shader.h"
 #include "Texture.h"
+#include "Types.h"
+#include "Model.h"
 
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
-
-//to map image filenames to textureIds
-#include <string.h>
-#include <map>
 
 // assimp include files. These three are usually needed.
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <assimp/DefaultLogger.hpp>
-#include <assimp/LogStream.hpp>
 #include <fstream>
 
-// the global Assimp scene object
-const aiScene* g_scene = nullptr;
+const aiScene* Import3DFromFile( const std::string& filename ) {
+  // the global Assimp scene object
+  const aiScene* g_scene = nullptr;
 
-// Create an instance of the Importer class
-Assimp::Importer importer;
+  // Create an instance of the Importer class
+  Assimp::Importer importer;
 
-bool Import3DFromFile( const std::string &filename) {
   // Check if file exists
-  std::ifstream fin(filename.c_str());
-  if(fin.fail()) {
+  std::ifstream fin( filename.c_str() );
+  if ( fin.fail() ) {
     std::string message = "Couldn't open file: " + filename;
     std::wstring targetMessage;
-    //utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
+    // utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
     std::cout << importer.GetErrorString() << std::endl;
-    return false;
+    return nullptr;
   }
 
   fin.close();
 
-  g_scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Quality);
+  g_scene = importer.ReadFile( filename, aiProcessPreset_TargetRealtime_Quality );
 
   // If the import failed, report it
-  if (g_scene == nullptr) {
+  if ( g_scene == nullptr ) {
     std::cout << importer.GetErrorString() << std::endl;
-    return false;
+    return nullptr;
   }
 
   // Now we can access the file's contents.
-  std::cout << "Import of scene " << filename <<  " succeeded." << std::endl;
+  std::cout << "Import of scene " << filename << " succeeded." << std::endl;
 
   // We're done. Everything will be cleaned up by the importer destructor
-  return true;
+  return g_scene;
 }
 
-float vertices[] = {
-    // positions
-    0.5f, 0.5f, 0.0f,   // top right vertex
-    1.0, 0.0, 0.0,      // color
-    0.75, 0.75,         // uv
-    0.5f, -0.5f, 0.0f,  // bottom right vertex
-    0.0, 1.0, 0.0,      // color
-    0.75, 0.25,         // uv
-    -0.5f, -0.5f, 0.0f, // bottom left vertex
-    0.0, 0.0, 1.0,      // color
-    0.25, 0.25,         // uv
-    -0.5f, 0.5f, 0.0f,  // top left vertex
-    1.0, 0.0, 0.0,      // color
-    0.25, 0.75          // uv
+VertexList vertices = {
+    Vertex { Vec3( 0.5f, 0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.75, 0.75 ) },   // top right
+    Vertex { Vec3( 0.5f, -0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.75, 0.25 ) },  // bottom right
+    Vertex { Vec3( -0.5f, -0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.25, 0.25 ) }, // bottom left
+    Vertex { Vec3( -0.5f, 0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.25, 0.75 ) },  // top left
 };
 
-unsigned int indices[] = {
-    // note that we start from 0!
+UIntList indices = {
     0, 3, 1, // first triangle
     1, 3, 2  // second triangle
 };
@@ -90,6 +76,7 @@ public:
   }
 
   ~Application() {
+    // TODO: Delete all the models before shaders
     delete mShader;
     glfwTerminate();
   }
@@ -122,7 +109,7 @@ public:
     glViewport( 0, 0, width, height );
 
     // ================================================================================
-    // Loading, Compiling and creating shaders
+    // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
     mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
@@ -135,68 +122,16 @@ public:
 
     // ================================================================================
 
+    // Query supported attributes
     int numAttributes;
     glGetIntegerv( GL_MAX_VERTEX_ATTRIBS, &numAttributes );
     std::cout << "Maximum nr of vertex attributes supported: " << numAttributes << std::endl;
 
-    // Create a vertex buffer
-    glGenBuffers( 1, &mGlVBO );
-
-    // Create a vertex array object
-    glGenVertexArrays( 1, &mGlVAO );
-
-    // Create an index buffer
-    glGenBuffers( 1, &mGlEBO );
-
-    // 1. Bind VAO
-    glBindVertexArray( mGlVAO );
-    // 2. Bind VBO and copy vertex data
-    glBindBuffer( GL_ARRAY_BUFFER, mGlVBO );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
-    // 3. Bind EBO and copy index data
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, mGlEBO );
-    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW );
-
-    // 4. Linking vertex attributes (how the data is layed out in memory)
-    // OpenGL does not know how the vertices are layed out in memory
-    // To let the OpenGL know how to connect the vertices, we need to specify
-    glVertexAttribPointer( 0,       // Corresponds to the location = 0 in vertex shader
-        3,                          // Entries per vertex data (x y and z)
-        GL_FLOAT,                   // Type of entry
-        GL_FALSE,                   // Specifies whether the data should be normalized or not
-        8 * sizeof( float ),        // Stride size in bytes
-        (void*) 0 );                // offset: Where the position data begins in the buffer
-    glEnableVertexAttribArray( 0 ); // Enable this attribute array
-    // Create one more for color data layout
-    glVertexAttribPointer( 1,              // Corresponds to the location = 0 in vertex shader
-        3,                                 // Entries per vertex data (r g and b)
-        GL_FLOAT,                          // Type of entry
-        GL_FALSE,                          // Specifies whether the data should be normalized or not
-        8 * sizeof( float ),               // Stride size in bytes
-        (void*) ( 3 * sizeof( float ) ) ); // offset: Where the position data begins in the buffer
-    glEnableVertexAttribArray( 1 );        // Enable this attribute array
-    // Create one more for uv data layout
-    glVertexAttribPointer( 2,              // Corresponds to the location = 0 in vertex shader
-        2,                                 // Entries per vertex data (u and v)
-        GL_FLOAT,                          // Type of entry
-        GL_FALSE,                          // Specifies whether the data should be normalized or not
-        8 * sizeof( float ),               // Stride size in bytes
-        (void*) ( 6 * sizeof( float ) ) ); // offset: Where the position data begins in the buffer
-    glEnableVertexAttribArray( 2 );        // Enable this attribute array
-
-    // 5. Draw
-    if ( mShader ) {
-      mShader->use();
-    }
-    // else throw an error
-
     // Culling options
-    glEnable( GL_CULL_FACE );
-    glCullFace( GL_BACK );
+    //glEnable( GL_CULL_FACE );
+    //glCullFace( GL_BACK );
+    glEnable( GL_DEPTH_TEST );
     glFrontFace( GL_CCW );
-
-    glBindVertexArray( mGlVAO );
-    glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
     return 0;
   }
@@ -212,8 +147,9 @@ public:
   }
 
   void run() {
-    float degPerSec   = 10.0f;
-    float newRotation = 0.0f;
+    // Create a dummy model for now
+    Model model( vertices, indices, mShader );
+    model.loadOnDevice(); // load on gpu
 
     float timeCurrentFrame;
     float deltaTime;
@@ -228,44 +164,34 @@ public:
       // Physics
 
       // Rendering
-      // Painting background
+      // Clear background
       glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-      glClear( GL_COLOR_BUFFER_BIT );
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-      for (int i=0; i<4; i++){
-        // Applying scene transforms
-        newRotation += degPerSec * deltaTime;
-        glm::mat4 model = glm::mat4( 1.0f );
-        model           = glm::rotate( model, glm::radians( 0.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ) );
+      // Applying scene transforms
 
-        // Creating camera vector
-        glm::mat4 camera = glm::mat4( 1.0f );
-        glm::vec3 cameraPosition( 0.0f + (float)i, 3.0f, 3.0f );
-        glm::vec3 lookAt( 0, 0, 0 );
-        glm::vec3 upVector( 0, 1, 0 );
+      // Creating camera vector
+      glm::mat4 camera = glm::mat4( 1.0f );
+      glm::vec3 cameraPosition( 3.0f, 3.0f, 3.0f );
+      glm::vec3 lookAt( 0, 0, 0 );
+      glm::vec3 upVector( 0, 1, 0 );
 
-        // Provide the positions wherever you want to look in the scene, but inverse the transform because camera looks
-        // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
-        // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
-        camera = glm::lookAt( cameraPosition, lookAt, upVector );
+      // Provide the positions wherever you want to look in the scene, but inverse the transform because camera looks
+      // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
+      // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
+      camera = glm::lookAt( cameraPosition, lookAt, upVector );
 
-        // Applying render transforms
-        glm::mat4 projection =
-            glm::perspective( glm::radians( 45.0f ), (float) mWidth / (float) mHeight, 0.0001f, 100000.0f );
+      // Applying render transforms
+      glm::mat4 projection =
+          glm::perspective( glm::radians( 45.0f ), (float) mWidth / (float) mHeight, 0.0001f, 100000.0f );
 
-        // Send transforms to the shader
-        mShader->setModelViewProjectionMatrix( model, camera, projection );
+      // Send view projection transforms to shader
+      mShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
 
-        // Draw call
-        mShader->use();
+      // Draw models here...
+      model.draw();
 
-        // Draw VAOs
-        glBindVertexArray( mGlVAO );
-        glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
-      }
-
-      // Unbind VAOs
-      glBindVertexArray( 0 ); // unbind
+      // TODO: glActiveTexture(texId) handling
 
       // Swap buffers and poll I/O events
       glfwSwapBuffers( mWindow );
@@ -282,22 +208,11 @@ private:
   int mHeight;
   GLFWwindow* mWindow = nullptr;
 
-  // OpenGL vars
-  unsigned int mGlVBO {};
-  unsigned int mGlVAO {};
-  unsigned int mGlEBO {};
-
   // Application vars
   Shader* mShader = nullptr;
 };
 
 int main() {
-  Import3DFromFile("./models/cube.obj");
-
-  std::string name = g_scene->mMeshes[0]->mName.C_Str();
-  auto vertices = g_scene->mMeshes[0]->mVertices;
-  auto nextVerex = vertices[1];
-
   Application app;
   app.run();
 
