@@ -192,6 +192,8 @@ public:
       model.draw();
 
       // TODO: glActiveTexture(texId) handling
+      // Shaders and Textures will be application level
+      // shader->use() texture->activate() will be called within models draw() function
 
       // Swap buffers and poll I/O events
       glfwSwapBuffers( mWindow );
