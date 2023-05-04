@@ -128,8 +128,8 @@ public:
     std::cout << "Maximum nr of vertex attributes supported: " << numAttributes << std::endl;
 
     // Culling options
-    //glEnable( GL_CULL_FACE );
-    //glCullFace( GL_BACK );
+    // glEnable( GL_CULL_FACE );
+    // glCullFace( GL_BACK );
     glEnable( GL_DEPTH_TEST );
     glFrontFace( GL_CCW );
 
@@ -148,8 +148,8 @@ public:
 
   void run() {
     // Create a dummy model for now
-    Model model( vertices, indices, mShader );
-    model.loadOnDevice(); // load on gpu
+    Model model( vertices, indices, new PhongMaterial() );
+    model.deviceLoad(); // load on gpu
 
     float timeCurrentFrame;
     float deltaTime;
@@ -169,6 +169,10 @@ public:
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
       // Applying scene transforms
+      float angle              = timeCurrentFrame / 1000.0f;
+      glm::mat4 modelTransform = model.getTransform();
+      modelTransform           = glm::rotate( modelTransform, angle, glm::vec3( 0, 1, 0 ) );
+      model.setTransform( modelTransform );
 
       // Creating camera vector
       glm::mat4 camera = glm::mat4( 1.0f );
@@ -188,8 +192,12 @@ public:
       // Send view projection transforms to shader
       mShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
 
+      mShader->use();
+
+      // TODO: Loop over models and use shader->draw()
+
       // Draw models here...
-      model.draw();
+      mShader->draw(&model);
 
       // TODO: glActiveTexture(texId) handling
       // Shaders and Textures will be application level
@@ -212,6 +220,7 @@ private:
 
   // Application vars
   Shader* mShader = nullptr;
+  std::vector<Texture> mTextures;
 };
 
 int main() {

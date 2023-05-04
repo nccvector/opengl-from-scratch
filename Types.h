@@ -14,6 +14,8 @@
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
 
+typedef glm::vec3 Color;
+
 typedef glm::vec2 Vec2;
 typedef glm::vec3 Vec3;
 typedef glm::vec4 Vec4;

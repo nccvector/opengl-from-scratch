@@ -15,6 +15,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Model.h"
+
+class Model;
+
 class Shader {
 public:
   Shader( const std::string& vertexPath, const std::string& fragmentPath );
@@ -28,12 +32,21 @@ public:
   [[maybe_unused]] void setInt( const std::string& name, int value ) const;
   [[maybe_unused]] void setFloat( const std::string& name, float value ) const;
 
-  void setTexture( const std::string& name, unsigned int value ) const;
+  // Set material props
+  void setTexture( const std::string& name, unsigned int textureId ) const;
+  void setColor( const std::string& colorName, Color colorValue ) const;
+
+  // Set model props
   void setModelMatrix( const glm::mat4& modelMatrix ) const;
+
+  // Set camera view props
   void setViewMatrix( const glm::mat4& viewMatrix ) const;
   void setProjectionMatrix( const glm::mat4& projectionMatrix ) const;
   void setModelViewProjectionMatrix(
       const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix ) const;
+
+  // Draw
+  void draw( Model* model ) const;
 
   // Statics
   // static const Texture loadTexture() {}

@@ -42,8 +42,8 @@ void Shader::use( const unsigned int program ) {
 [[maybe_unused]] void Shader::setFloat( const std::string& name, float value ) const {
   glUniform1f( glGetUniformLocation( mGLProgram, name.c_str() ), value );
 }
-void Shader::setTexture( const std::string& name, unsigned int value ) const {
-  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (GLint) value );
+void Shader::setTexture( const std::string& name, unsigned int textureId ) const {
+  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (GLint) textureId );
 }
 void Shader::setModelMatrix( const glm::mat4& modelMatrix ) const {
   glUniformMatrix4fv( glGetUniformLocation( mGLProgram, "Model" ), 1, GL_FALSE, glm::value_ptr( modelMatrix ) );
@@ -120,4 +120,40 @@ void Shader::validateProgram( const unsigned int program ) {
 }
 void Shader::use() const {
   use( mGLProgram );
+}
+void Shader::setColor( const std::string& colorName, Color colorValue ) const {
+  glUniform3f( glGetUniformLocation( mGLProgram, colorName.c_str() ), colorValue.r, colorValue.g, colorValue.b );
+}
+void Shader::draw( Model* model ) const {
+  // Activate textures used by this model
+  Texture* textureAmbient = model->getMaterial()->getTextureAmbient();
+  Texture* textureDiffuse = model->getMaterial()->getTextureDiffuse();
+  Texture* textureSpecular = model->getMaterial()->getTextureSpecular();
+
+  // Set all the shader attributes
+  setModelMatrix( model->getTransform() );
+
+  // Set model material properties
+  Color colorAmbient      = model->getMaterial()->getColorAmbient();
+  if ( textureAmbient == nullptr ) {
+    setColor( "ColorAmbient", colorAmbient );
+  } else {
+    setTexture( "TextureAmbient", textureAmbient->getId() );
+  }
+
+  Color colorDiffuse      = model->getMaterial()->getColorDiffuse();
+  if ( textureDiffuse == nullptr ) {
+    setColor( "ColorDiffuse", colorDiffuse );
+  } else {
+    setTexture( "TextureDiffuse", textureDiffuse->getId() );
+  }
+
+  Color colorSpecular      = model->getMaterial()->getColorSpecular();
+  if ( textureSpecular == nullptr ) {
+    setColor( "ColorSpecular", colorSpecular );
+  } else {
+    setTexture( "TextureSpecular", textureSpecular->getId() );
+  }
+
+  model->_drawAndRelease();
 }
