@@ -155,5 +155,7 @@ void Shader::draw( Model* model ) const {
     setTexture( "TextureSpecular", textureSpecular->getId() );
   }
 
-  model->_drawAndRelease();
+  // bind model
+  model->bind();
+  model->release();
 }

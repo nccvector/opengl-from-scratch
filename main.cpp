@@ -114,12 +114,6 @@ public:
 
     mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
 
-    // Create a texture
-    Texture texture( "textures/UVMap.png" );
-
-    // TODO: Raise error that pointer is null and continue, dont let the application crash!
-    mShader->setTexture( "Texture", texture.getId() );
-
     // ================================================================================
 
     // Query supported attributes
@@ -147,8 +141,14 @@ public:
   }
 
   void run() {
+    // Load textures
+    Texture texture( "textures/UVMap.png" );
+
+    // Create Materials
+    PhongMaterial material(Color(1.0f), Color(0.5f), Color(1.0f), nullptr, &texture, nullptr);
+
     // Create a dummy model for now
-    Model model( vertices, indices, new PhongMaterial() );
+    Model model( vertices, indices, &material );
     model.deviceLoad(); // load on gpu
 
     float timeCurrentFrame;
