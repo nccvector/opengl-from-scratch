@@ -8,7 +8,6 @@
 
 #include "Types.h"
 #include "Texture.h"
-#include "Shader.h"
 
 class PhongMaterial {
 public:

@@ -13,8 +13,6 @@
 #include "Types.h"
 #include "Material.h"
 
-class PhongMaterial;
-
 class Model {
 public:
   Model( VertexList& vertices, UIntList& indices, PhongMaterial* material = nullptr )

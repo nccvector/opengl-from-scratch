@@ -8,10 +8,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "Model.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "Types.h"
-#include "Model.h"
 
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
