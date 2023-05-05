@@ -14,59 +14,13 @@ class Shader;
 
 class PhongMaterial {
 public:
-  explicit PhongMaterial( Color colorAmbient = Color( 1.0f ), Color colorDiffuse = Color( 0.5f ),
-      Color colorSpecular = Color( 1.0f ), Texture* textureAmbient = nullptr, Texture* textureDiffuse = nullptr,
-      Texture* textureSpecular = nullptr, Shader* shader = nullptr )
-      : mColorAmbient( colorAmbient ), mColorDiffuse( colorDiffuse ), mColorSpecular( colorSpecular ),
-        mTextureAmbient( textureAmbient ), mTextureDiffuse( textureDiffuse ), mTextureSpecular( textureSpecular ),
-        mShader( shader ) {};
+  PhongMaterial( const std::vector<Texture*>& textures, Color colorAmbient = Color( 1.0f ),
+      Color colorDiffuse = Color( 0.5f ), Color colorSpecular = Color( 1.0f ) )
+      : mTextures( textures ), mColorAmbient( colorAmbient ), mColorDiffuse( colorDiffuse ),
+        mColorSpecular( colorSpecular ) {};
 
-  inline Color getColorAmbient() {
-    return mColorAmbient;
-  }
-
-  inline Color getColorDiffuse() {
-    return mColorAmbient;
-  }
-
-  inline Color getColorSpecular() {
-    return mColorAmbient;
-  }
-
-  inline Texture* getTextureAmbient() {
-    return mTextureAmbient;
-  }
-
-  inline Texture* getTextureDiffuse() {
-    return mTextureDiffuse;
-  }
-
-  inline Texture* getTextureSpecular() {
-    return mTextureSpecular;
-  }
-
-  inline void bind()
-  {
-    Texture::resetTextureUnits();
-    
-    if (mTextureAmbient)
-      mTextureAmbient->bind();
-    if (mTextureDiffuse)
-      mTextureDiffuse->bind();
-    if (mTextureSpecular)
-      mTextureSpecular->bind();
-  }
-
-  inline void release()
-  {
-    if (mTextureAmbient)
-      mTextureAmbient->release();
-    if (mTextureDiffuse)
-      mTextureDiffuse->release();
-    if (mTextureSpecular)
-      mTextureSpecular->release();
-
-    Texture::resetTextureUnits();
+  inline std::vector<Texture*> getTextures() {
+    return mTextures;
   }
 
 private:
@@ -74,12 +28,7 @@ private:
   Color mColorDiffuse;
   Color mColorSpecular;
 
-  // TODO: Use smart pointers here...
-  Texture* mTextureAmbient;
-  Texture* mTextureDiffuse;
-  Texture* mTextureSpecular;
-
-  Shader* mShader;
+  std::vector<Texture*> mTextures;
 };
 
 

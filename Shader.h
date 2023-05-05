@@ -28,9 +28,9 @@ public:
   static void use( unsigned int program );
   void use() const;
 
-  [[maybe_unused]] void setBool( const std::string& name, bool value ) const;
-  [[maybe_unused]] void setInt( const std::string& name, int value ) const;
-  [[maybe_unused]] void setFloat( const std::string& name, float value ) const;
+  void setBool( const std::string& name, bool value ) const;
+  void setInt( const std::string& name, int value ) const;
+  void setFloat( const std::string& name, float value ) const;
 
   // Set material props
   void setTexture( const std::string& name, unsigned int textureId ) const;

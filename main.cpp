@@ -114,6 +114,10 @@ public:
 
     mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
 
+    // Load textures
+    Texture* newTexture = new Texture( "textures/UVMap.png" );
+    mTextures.push_back( newTexture );
+
     // ================================================================================
 
     // Query supported attributes
@@ -141,15 +145,11 @@ public:
   }
 
   void run() {
-    // Load textures
-    Texture texture( "textures/UVMap.png" );
-
     // Create Materials
-    PhongMaterial material(Color(1.0f), Color(0.5f), Color(1.0f), nullptr, &texture, nullptr);
+    PhongMaterial* material = new PhongMaterial( mTextures );
 
     // Create a dummy model for now
-    Model model( vertices, indices, &material );
-    model.deviceLoad(); // load on gpu
+    Model model( vertices, indices, material );
 
     float timeCurrentFrame;
     float deltaTime;
@@ -197,9 +197,9 @@ public:
       // TODO: Loop over models and use shader->draw()
 
       // Draw models here...
-      mShader->draw(&model);
+      mShader->draw( &model );
 
-      // TODO: glActiveTexture(texId) handling
+      // TODO: glActiveTexture(textureUnit) handling
       // Shaders and Textures will be application level
       // shader->use() texture->activate() will be called within models draw() function
 
@@ -220,7 +220,7 @@ private:
 
   // Application vars
   Shader* mShader = nullptr;
-  std::vector<Texture> mTextures;
+  std::vector<Texture*> mTextures;
 };
 
 int main() {

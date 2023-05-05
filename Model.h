@@ -18,11 +18,16 @@ class PhongMaterial;
 class Model {
 public:
   Model( VertexList& vertices, UIntList& indices, PhongMaterial* material = nullptr )
-      : mVertices( vertices ), mIndices( indices ), mMaterial( material ) {}
+      : mVertices( vertices ), mIndices( indices ), mMaterial( material ) {
+    deviceLoad();
+  }
+
+  ~Model() {
+    deviceUnload();
+  }
 
   void deviceLoad();
-
-  [[maybe_unused]] void deviceUnload() {}
+  void deviceUnload() {}
 
   inline glm::mat4& getTransform() {
     return mTransform4x4;
@@ -36,9 +41,15 @@ public:
     return mMaterial;
   }
 
-  void bind();
+  inline unsigned int getVAO(){
+    return mGlVAO;
+  }
 
-  void release();
+  inline size_t getSize()
+  {
+    return mIndices.size();
+  }
+
 
 private:
   VertexList mVertices    = {};

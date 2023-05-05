@@ -55,20 +55,4 @@ void Model::deviceLoad() {
   glBindVertexArray( 0 );
 }
 
-void Model::bind() {
-  // Bind material and textures
-  mMaterial->bind();
 
-  // Must call _Release after calls to this function end
-  // Draw call
-  glBindVertexArray( mGlVAO );
-  glDrawElements( GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0 );
-}
-
-void Model::release() {
-  // Release material and textures
-  mMaterial->release();
-
-  // Unbind VAOs
-  glBindVertexArray( 0 ); // unbind
-}

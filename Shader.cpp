@@ -125,37 +125,29 @@ void Shader::setColor( const std::string& colorName, Color colorValue ) const {
   glUniform3f( glGetUniformLocation( mGLProgram, colorName.c_str() ), colorValue.r, colorValue.g, colorValue.b );
 }
 void Shader::draw( Model* model ) const {
-  // Activate textures used by this model
-  Texture* textureAmbient = model->getMaterial()->getTextureAmbient();
-  Texture* textureDiffuse = model->getMaterial()->getTextureDiffuse();
-  Texture* textureSpecular = model->getMaterial()->getTextureSpecular();
-
   // Set all the shader attributes
   setModelMatrix( model->getTransform() );
 
-  // Set model material properties
-  Color colorAmbient      = model->getMaterial()->getColorAmbient();
-  if ( textureAmbient == nullptr ) {
-    setColor( "ColorAmbient", colorAmbient );
-  } else {
-    setTexture( "TextureAmbient", textureAmbient->getId() );
-  }
+  // Bind Material TODO: check for compatibility with this shader before binding
+  PhongMaterial* material = model->getMaterial();
 
-  Color colorDiffuse      = model->getMaterial()->getColorDiffuse();
-  if ( textureDiffuse == nullptr ) {
-    setColor( "ColorDiffuse", colorDiffuse );
-  } else {
-    setTexture( "TextureDiffuse", textureDiffuse->getId() );
-  }
+  int texUnit = 0;
+  for (Texture* texture : material->getTextures())
+  {
+    // Activate texture unit
+    glActiveTexture(GL_TEXTURE0 + texUnit);
 
-  Color colorSpecular      = model->getMaterial()->getColorSpecular();
-  if ( textureSpecular == nullptr ) {
-    setColor( "ColorSpecular", colorSpecular );
-  } else {
-    setTexture( "TextureSpecular", textureSpecular->getId() );
-  }
+    // Assign texture unit to appropriate uniform
+    std::string textureUniform = "Texture" + std::to_string(texUnit);
+    setTexture(textureUniform, texUnit);
+    glBindTexture(GL_TEXTURE_2D, texture->getId());
 
-  // bind model
-  model->bind();
-  model->release();
+    texUnit += 1;
+  }
+  glActiveTexture(GL_TEXTURE0);
+
+  // Draw model
+  glBindVertexArray( model->getVAO());
+  glDrawElements( GL_TRIANGLES, model->getSize(), GL_UNSIGNED_INT, 0 );
+  glBindVertexArray( 0 ); // unbind
 }
