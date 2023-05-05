@@ -101,7 +101,7 @@ public:
     return 0;
   }
 
-  int initGL( int width, int height ) {
+  int initGL( int width, int height, bool enableBackfaceCulling = true, bool enableDepthTest = true ) {
     if ( !gladLoadGLLoader( (GLADloadproc) glfwGetProcAddress ) ) {
       std::cout << "Failed to initialize GLAD" << std::endl;
       return -1;
@@ -122,11 +122,16 @@ public:
     std::cout << "Maximum nr of vertex attributes supported: " << numAttributes << std::endl;
 
     // Culling options
-    // glEnable( GL_CULL_FACE );
-    // glCullFace( GL_BACK );
-    glEnable( GL_DEPTH_TEST );
-    glFrontFace( GL_CCW );
-
+    if ( enableBackfaceCulling )
+    {
+      glEnable( GL_CULL_FACE );
+      glCullFace( GL_BACK );
+    }
+    if ( enableDepthTest )
+    {
+      glEnable( GL_DEPTH_TEST );
+      glFrontFace( GL_CCW );
+    }
     return 0;
   }
 
@@ -151,7 +156,7 @@ public:
 
     // Create models and assign material
     for ( int i = 0; i < 4; i++ ) {
-      Model model(vertices, indices, material);
+      Model model( vertices, indices, material );
       mModels.push_back( model );
     }
 
