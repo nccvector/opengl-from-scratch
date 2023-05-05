@@ -124,15 +124,15 @@ void Shader::use() const {
 void Shader::setColor( const std::string& colorName, Color colorValue ) const {
   glUniform3f( glGetUniformLocation( mGLProgram, colorName.c_str() ), colorValue.r, colorValue.g, colorValue.b );
 }
-void Shader::draw( Model* model ) const {
+void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
-  setModelMatrix( model->getTransform() );
+  setModelMatrix( model.getTransform() );
 
   // Bind Material TODO: check for compatibility with this shader before binding
-  PhongMaterial* material = model->getMaterial();
+  const PhongMaterial& material = model.getMaterial();
 
   int texUnit = 0;
-  for (Texture* texture : material->getTextures())
+  for (const Texture& texture : material.getTextures())
   {
     // Activate texture unit
     glActiveTexture(GL_TEXTURE0 + texUnit);
@@ -140,14 +140,14 @@ void Shader::draw( Model* model ) const {
     // Assign texture unit to appropriate uniform
     std::string textureUniform = "Texture" + std::to_string(texUnit);
     setTexture(textureUniform, texUnit);
-    glBindTexture(GL_TEXTURE_2D, texture->getId());
+    glBindTexture(GL_TEXTURE_2D, texture.getId());
 
     texUnit += 1;
   }
   glActiveTexture(GL_TEXTURE0);
-  
+
   // Draw model
-  glBindVertexArray( model->getVAO());
-  glDrawElements( GL_TRIANGLES, model->getSize(), GL_UNSIGNED_INT, 0 );
+  glBindVertexArray( model.getVAO());
+  glDrawElements( GL_TRIANGLES, model.getSize(), GL_UNSIGNED_INT, 0 );
   glBindVertexArray( 0 ); // unbind
 }

@@ -11,20 +11,16 @@ class Texture {
 
 public:
   explicit Texture( const std::string& texturePath );
-  ~Texture();
 
   [[nodiscard]] unsigned int getId() const;
 
 private:
+  const char* mName;
+  unsigned char* mData;
   int mWidth {};
   int mHeight {};
   int mNumChannels {};
   unsigned int mGLTexture {};
-  unsigned char* mData;
-  bool mBound = false;
-
-  static int mCurrentTextureUnit;
-  static const int MAX_TEXTURE_UNITS;
 };
 
 #endif // OPENGL_FROM_SCRATCH_TEXTURE_H

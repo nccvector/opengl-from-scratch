@@ -114,10 +114,6 @@ public:
 
     mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
 
-    // Load textures
-    Texture* newTexture = new Texture( "textures/UVMap.png" );
-    mTextures.push_back( newTexture );
-
     // ================================================================================
 
     // Query supported attributes
@@ -145,13 +141,18 @@ public:
   }
 
   void run() {
+    // Load textures
+    Texture newTexture( "textures/UVMap.png" );
+    mTextures.push_back( newTexture );
+
     // Create a Material
-    PhongMaterial* material = new PhongMaterial( mTextures );
+    PhongMaterial material( mTextures );
     mMaterials.push_back( material );
 
     // Create models and assign material
     for ( int i = 0; i < 4; i++ ) {
-      mModels.push_back( new Model( vertices, indices, material ) );
+      Model model(vertices, indices, material);
+      mModels.push_back( model );
     }
 
     float timeCurrentFrame;
@@ -175,10 +176,10 @@ public:
       float angle = timeCurrentFrame / 1000.0f;
 
       for ( int i = 0; i < mModels.size(); i++ ) {
-        Model* model             = mModels[i];
-        glm::mat4 modelTransform = model->getTransform();
-        modelTransform           = glm::rotate( modelTransform, angle * (i + 1), glm::vec3( 0, 1, 0 ) );
-        model->setTransform( modelTransform );
+        Model& model             = mModels[i];
+        glm::mat4 modelTransform = model.getTransform();
+        modelTransform           = glm::rotate( modelTransform, angle * ( i + 1 ), glm::vec3( 0, 1, 0 ) );
+        model.setTransform( modelTransform );
       }
 
       // Update View TODO: view can also be a model
@@ -224,9 +225,9 @@ private:
 
   // Application vars
   Shader* mShader = nullptr; // Only one shader supported as of now
-  std::vector<Texture*> mTextures;
-  std::vector<PhongMaterial*> mMaterials;
-  std::vector<Model*> mModels;
+  std::vector<Texture> mTextures;
+  std::vector<PhongMaterial> mMaterials;
+  std::vector<Model> mModels;
 };
 
 int main() {

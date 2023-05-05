@@ -37,9 +37,7 @@ Texture::Texture( const std::string& texturePath ) {
   {
     std::cerr << "Could not bind texture!" << std::endl;
   }
-}
 
-Texture::~Texture() {
   stbi_image_free( mData );
 }
 
