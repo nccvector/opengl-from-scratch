@@ -145,11 +145,14 @@ public:
   }
 
   void run() {
-    // Create Materials
+    // Create a Material
     PhongMaterial* material = new PhongMaterial( mTextures );
+    mMaterials.push_back( material );
 
-    // Create a dummy model for now
-    Model model( vertices, indices, material );
+    // Create models and assign material
+    for ( int i = 0; i < 4; i++ ) {
+      mModels.push_back( new Model( vertices, indices, material ) );
+    }
 
     float timeCurrentFrame;
     float deltaTime;
@@ -168,13 +171,17 @@ public:
       glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-      // Applying scene transforms
-      float angle              = timeCurrentFrame / 1000.0f;
-      glm::mat4 modelTransform = model.getTransform();
-      modelTransform           = glm::rotate( modelTransform, angle, glm::vec3( 0, 1, 0 ) );
-      model.setTransform( modelTransform );
+      // Update Models
+      float angle = timeCurrentFrame / 1000.0f;
 
-      // Creating camera vector
+      for ( int i = 0; i < mModels.size(); i++ ) {
+        Model* model             = mModels[i];
+        glm::mat4 modelTransform = model->getTransform();
+        modelTransform           = glm::rotate( modelTransform, angle * (i + 1), glm::vec3( 0, 1, 0 ) );
+        model->setTransform( modelTransform );
+      }
+
+      // Update View TODO: view can also be a model
       glm::mat4 camera = glm::mat4( 1.0f );
       glm::vec3 cameraPosition( 3.0f, 3.0f, 3.0f );
       glm::vec3 lookAt( 0, 0, 0 );
@@ -192,16 +199,13 @@ public:
       // Send view projection transforms to shader
       mShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
 
+      // Enable shader
       mShader->use();
 
-      // TODO: Loop over models and use shader->draw()
-
-      // Draw models here...
-      mShader->draw( &model );
-
-      // TODO: glActiveTexture(textureUnit) handling
-      // Shaders and Textures will be application level
-      // shader->use() texture->activate() will be called within models draw() function
+      // Draw models
+      for ( auto model : mModels ) {
+        mShader->draw( model );
+      }
 
       // Swap buffers and poll I/O events
       glfwSwapBuffers( mWindow );
@@ -219,8 +223,10 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // Application vars
-  Shader* mShader = nullptr;
+  Shader* mShader = nullptr; // Only one shader supported as of now
   std::vector<Texture*> mTextures;
+  std::vector<PhongMaterial*> mMaterials;
+  std::vector<Model*> mModels;
 };
 
 int main() {

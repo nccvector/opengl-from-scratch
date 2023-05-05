@@ -145,7 +145,7 @@ void Shader::draw( Model* model ) const {
     texUnit += 1;
   }
   glActiveTexture(GL_TEXTURE0);
-
+  
   // Draw model
   glBindVertexArray( model->getVAO());
   glDrawElements( GL_TRIANGLES, model->getSize(), GL_UNSIGNED_INT, 0 );
