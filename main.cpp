@@ -22,20 +22,6 @@
 #include <assimp/scene.h>
 #include <fstream>
 
-const aiScene* Import3DFromFile( const std::string& filename ) {}
-
-VertexList vertices = {
-    Vertex { Vec3( 0.5f, 0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.75, 0.75 ) },   // top right
-    Vertex { Vec3( 0.5f, -0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.75, 0.25 ) },  // bottom right
-    Vertex { Vec3( -0.5f, -0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.25, 0.25 ) }, // bottom left
-    Vertex { Vec3( -0.5f, 0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.25, 0.75 ) },  // top left
-};
-
-UIntList indices = {
-    0, 3, 1, // first triangle
-    1, 3, 2  // second triangle
-};
-
 class Application {
 public:
   explicit Application( const char* title = "My Application" ) : mTitle( title ), mWidth( 800 ), mHeight( 600 ) {
@@ -142,24 +128,29 @@ public:
     std::cout << "Import of scene " << filename << " succeeded." << std::endl;
 
     for ( unsigned int i = 0; i < g_scene->mNumMeshes; i++ ) {
-      const aiMesh* mesh    = g_scene->mMeshes[i];
-      unsigned int numVerts = mesh->mNumVertices;
       VertexList vlist;
       UIntList ilist;
 
+      const aiMesh* mesh = g_scene->mMeshes[i];
+
       // Filling in the vertex data
       for ( unsigned int v = 0; v < mesh->mNumVertices; v++ ) {
-        aiVector3D aiVertex             = mesh->mVertices[v];
-        aiVector3D aiNormal             = mesh->mNormals[v];
-        aiVector3t<ai_real>* aiTexCoord = mesh->mTextureCoords[v];
-
         Vertex newVertex;
-        newVertex.Position = glm::vec3( aiVertex.x, aiVertex.y, aiVertex.z );
-        newVertex.Normal   = glm::vec3( aiNormal.x, aiNormal.y, aiNormal.z );
-        newVertex.TexCoord = glm::vec2( 0.0f );
-        //        if ( aiTexCoord != nullptr ) {
-        //          newVertex.TexCoord = glm::vec2(aiTexCoord->x, aiTexCoord->y);
-        //        }
+
+        aiVector3D aiVertex = mesh->mVertices[v];
+        newVertex.Position  = glm::vec3( aiVertex.x, aiVertex.y, aiVertex.z );
+
+        aiVector3D aiNormal = mesh->mNormals[v];
+        newVertex.Normal    = glm::vec3( aiNormal.x, aiNormal.y, aiNormal.z );
+
+        aiVector3t<float> aiTexCoord;
+        if ( mesh->mTextureCoords[0] != nullptr ) {
+          aiTexCoord         = mesh->mTextureCoords[0][v];
+          newVertex.TexCoord = glm::vec2( aiTexCoord.x, aiTexCoord.y );
+        } else {
+          newVertex.TexCoord = glm::vec2( 0.0f );
+        }
+
         vlist.push_back( newVertex );
       }
 
@@ -172,8 +163,7 @@ public:
         }
       }
 
-      mMaterials.push_back( PhongMaterial( {} ) );
-      Model newModel( vlist, ilist, mMaterials[mMaterials.size() - 1] );
+      Model newModel( vlist, ilist, mMaterials[0] );
       glm::mat4 transform = newModel.getTransform();
       newModel.setTransform( glm::scale( transform, glm::vec3( scale ) ) );
       mModels.push_back( newModel );
@@ -191,12 +181,7 @@ public:
 
     // Push some default textures and materials before calling this!
     LoadModelsFromFile( "models/bunny.obj", 5.0f );
-
-    // Create models and assign material
-    for ( int i = 0; i < 4; i++ ) {
-      Model model( vertices, indices, material );
-      mModels.push_back( model );
-    }
+    LoadModelsFromFile( "models/cube.obj", 0.5f );
 
     float timeCurrentFrame;
     float deltaTime;
@@ -221,7 +206,7 @@ public:
       for ( int i = 0; i < mModels.size(); i++ ) {
         Model& model             = mModels[i];
         glm::mat4 modelTransform = model.getTransform();
-        modelTransform           = glm::rotate( modelTransform, angle * ( i + 1 ), glm::vec3( 0, 1, 0 ) );
+        modelTransform           = glm::rotate( modelTransform, angle, glm::vec3( 0, 1, 0 ) );
         model.setTransform( modelTransform );
       }
 
