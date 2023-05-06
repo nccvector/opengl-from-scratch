@@ -29,7 +29,7 @@ public:
   void deviceLoad();
   void deviceUnload() {}
 
-  [[nodiscard]] inline const glm::mat4& getTransform() const {
+  inline const glm::mat4& getTransform() const {
     return mTransform4x4;
   }
 
@@ -37,18 +37,17 @@ public:
     mTransform4x4 = transform;
   }
 
-  [[nodiscard]] inline const PhongMaterial& getMaterial() const {
+  inline PhongMaterial& getMaterial() const {
     return mMaterial;
   }
 
-  [[nodiscard]] inline unsigned int getVAO() const {
+  inline unsigned int getVAO() const {
     return mGlVAO;
   }
 
   inline size_t getSize() const {
     return mIndices.size();
   }
-
 
 private:
   VertexList mVertices    = {};

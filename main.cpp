@@ -22,39 +22,7 @@
 #include <assimp/scene.h>
 #include <fstream>
 
-const aiScene* Import3DFromFile( const std::string& filename ) {
-  // the global Assimp scene object
-  const aiScene* g_scene = nullptr;
-
-  // Create an instance of the Importer class
-  Assimp::Importer importer;
-
-  // Check if file exists
-  std::ifstream fin( filename.c_str() );
-  if ( fin.fail() ) {
-    std::string message = "Couldn't open file: " + filename;
-    std::wstring targetMessage;
-    // utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
-    std::cout << importer.GetErrorString() << std::endl;
-    return nullptr;
-  }
-
-  fin.close();
-
-  g_scene = importer.ReadFile( filename, aiProcessPreset_TargetRealtime_Quality );
-
-  // If the import failed, report it
-  if ( g_scene == nullptr ) {
-    std::cout << importer.GetErrorString() << std::endl;
-    return nullptr;
-  }
-
-  // Now we can access the file's contents.
-  std::cout << "Import of scene " << filename << " succeeded." << std::endl;
-
-  // We're done. Everything will be cleaned up by the importer destructor
-  return g_scene;
-}
+const aiScene* Import3DFromFile( const std::string& filename ) {}
 
 VertexList vertices = {
     Vertex { Vec3( 0.5f, 0.5f, 0.0f ), Vec3( 0.0, 0.0, 1.0 ), Vec2( 0.75, 0.75 ) },   // top right
@@ -122,13 +90,11 @@ public:
     std::cout << "Maximum nr of vertex attributes supported: " << numAttributes << std::endl;
 
     // Culling options
-    if ( enableBackfaceCulling )
-    {
+    if ( enableBackfaceCulling ) {
       glEnable( GL_CULL_FACE );
       glCullFace( GL_BACK );
     }
-    if ( enableDepthTest )
-    {
+    if ( enableDepthTest ) {
       glEnable( GL_DEPTH_TEST );
       glFrontFace( GL_CCW );
     }
@@ -145,6 +111,75 @@ public:
     }
   }
 
+  void LoadModelsFromFile( const std::string& filename, float scale = 1.0f ) {
+    // the global Assimp scene object
+    const aiScene* g_scene = nullptr;
+
+    // Create an instance of the Importer class
+    Assimp::Importer importer;
+
+    // Check if file exists
+    std::ifstream fin( filename.c_str() );
+    if ( fin.fail() ) {
+      std::string message = "Couldn't open file: " + filename;
+      std::wstring targetMessage;
+      // utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
+      std::cout << importer.GetErrorString() << std::endl;
+      return;
+    }
+
+    fin.close();
+
+    g_scene = importer.ReadFile( filename, aiProcessPreset_TargetRealtime_Quality );
+
+    // If the import failed, report it
+    if ( g_scene == nullptr ) {
+      std::cout << importer.GetErrorString() << std::endl;
+      return;
+    }
+
+    // Now we can access the file's contents.
+    std::cout << "Import of scene " << filename << " succeeded." << std::endl;
+
+    for ( unsigned int i = 0; i < g_scene->mNumMeshes; i++ ) {
+      const aiMesh* mesh    = g_scene->mMeshes[i];
+      unsigned int numVerts = mesh->mNumVertices;
+      VertexList vlist;
+      UIntList ilist;
+
+      // Filling in the vertex data
+      for ( unsigned int v = 0; v < mesh->mNumVertices; v++ ) {
+        aiVector3D aiVertex             = mesh->mVertices[v];
+        aiVector3D aiNormal             = mesh->mNormals[v];
+        aiVector3t<ai_real>* aiTexCoord = mesh->mTextureCoords[v];
+
+        Vertex newVertex;
+        newVertex.Position = glm::vec3( aiVertex.x, aiVertex.y, aiVertex.z );
+        newVertex.Normal   = glm::vec3( aiNormal.x, aiNormal.y, aiNormal.z );
+        newVertex.TexCoord = glm::vec2( 0.0f );
+        //        if ( aiTexCoord != nullptr ) {
+        //          newVertex.TexCoord = glm::vec2(aiTexCoord->x, aiTexCoord->y);
+        //        }
+        vlist.push_back( newVertex );
+      }
+
+      // Filling in the indices data
+      for ( unsigned int vf = 0; vf < mesh->mNumFaces; vf++ ) {
+        aiFace face = mesh->mFaces[vf];
+        for ( unsigned int vi = 0; vi < face.mNumIndices; vi++ ) {
+          unsigned int aiIndex = face.mIndices[vi];
+          ilist.push_back( aiIndex );
+        }
+      }
+
+      mMaterials.push_back( PhongMaterial( {} ) );
+      Model newModel( vlist, ilist, mMaterials[mMaterials.size() - 1] );
+      glm::mat4 transform = newModel.getTransform();
+      newModel.setTransform( glm::scale( transform, glm::vec3( scale ) ) );
+      mModels.push_back( newModel );
+    }
+  }
+
   void run() {
     // Load textures
     Texture newTexture( "textures/UVMap.png" );
@@ -153,6 +188,9 @@ public:
     // Create a Material
     PhongMaterial material( mTextures );
     mMaterials.push_back( material );
+
+    // Push some default textures and materials before calling this!
+    LoadModelsFromFile( "models/bunny.obj", 5.0f );
 
     // Create models and assign material
     for ( int i = 0; i < 4; i++ ) {
@@ -236,6 +274,7 @@ private:
 };
 
 int main() {
+
   Application app;
   app.run();
 
