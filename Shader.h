@@ -46,7 +46,7 @@ public:
       const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix ) const;
 
   // Draw
-  void draw( Model& model ) const;
+  void draw( const Model& model ) const;
 
   // Statics
   // static const Texture loadTexture() {}

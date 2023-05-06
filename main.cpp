@@ -24,9 +24,9 @@
 
 class Application {
 public:
-  explicit Application( const char* title = "My Application" ) : mTitle( title ), mWidth( 800 ), mHeight( 600 ) {
-    initWindow();
-    initGL( mWidth, mHeight );
+  explicit Application( const char* title = "My Application", int width = 800, int height = 600 ) : mTitle( title ) {
+    initWindow( width, height );
+    initGL( width, height );
   }
 
   ~Application() {
@@ -35,14 +35,14 @@ public:
     glfwTerminate();
   }
 
-  int initWindow() {
+  int initWindow( int width, int height ) {
     glfwInit();
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    mWindow = glfwCreateWindow( mWidth, mHeight, mTitle, nullptr, nullptr );
+    mWindow = glfwCreateWindow( width, height, mTitle, nullptr, nullptr );
     if ( mWindow == nullptr ) {
       std::cout << "Failed to create GLFW window" << std::endl;
       glfwTerminate();
@@ -222,8 +222,9 @@ public:
       camera = glm::lookAt( cameraPosition, lookAt, upVector );
 
       // Applying render transforms
-      glm::mat4 projection =
-          glm::perspective( glm::radians( 45.0f ), (float) mWidth / (float) mHeight, 0.0001f, 100000.0f );
+      int width, height;
+      glfwGetWindowSize( mWindow, &width, &height );
+      glm::mat4 projection = glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
 
       // Send view projection transforms to shader
       mShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
@@ -247,8 +248,6 @@ public:
 private:
   // Glfw vars
   const char* mTitle;
-  int mWidth;
-  int mHeight;
   GLFWwindow* mWindow = nullptr;
 
   // Application vars

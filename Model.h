@@ -37,7 +37,7 @@ public:
     mTransform4x4 = transform;
   }
 
-  inline PhongMaterial& getMaterial() const {
+  inline const PhongMaterial& getMaterial() const {
     return mMaterial;
   }
 

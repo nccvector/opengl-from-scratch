@@ -124,12 +124,12 @@ void Shader::use() const {
 void Shader::setColor( const std::string& colorName, Color colorValue ) const {
   glUniform3f( glGetUniformLocation( mGLProgram, colorName.c_str() ), colorValue.r, colorValue.g, colorValue.b );
 }
-void Shader::draw( Model& model ) const {
+void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
   setModelMatrix( model.getTransform() );
 
   // Bind Material TODO: check for compatibility with this shader before binding
-  PhongMaterial material = model.getMaterial();
+  const PhongMaterial& material = model.getMaterial();
 
   int texUnit = 0;
   for (const Texture& texture : material.getTextures())
