@@ -24,7 +24,7 @@ message("INCLUDE_DIRS: " ${INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
 
 # Target ofs
-add_executable(ofs main.cpp ext/glad/src/glad.c Shader.cpp Shader.h Texture.cpp Texture.h Model.cpp Model.h Types.h Types.cpp Vertex.cpp Vertex.h Material.cpp Material.h PhongData.h shaders/DrawGroup.cpp shaders/DrawGroup.h)
+add_executable(ofs main.cpp ext/glad/src/glad.c Shader.cpp Shader.h Texture.cpp Texture.h Model.cpp Model.h Types.h Types.cpp Vertex.cpp Vertex.h Material.cpp Material.h PhongData.h shaders/DrawGroup.cpp shaders/DrawGroup.h Light.h)
 target_link_libraries(ofs
         ${OPENGL_LIBRARIES}
         glfw

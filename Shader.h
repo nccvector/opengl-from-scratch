@@ -16,8 +16,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Model.h"
+#include "Light.h"
 
 class Model;
+struct PointLight;
 
 class Shader {
 public:
@@ -32,9 +34,26 @@ public:
   void setInt( const std::string& name, int value ) const;
   void setFloat( const std::string& name, float value ) const;
 
+  void setVec3Float( const std::string& name, Vec3 value ) const {
+    glUniform3fv( glGetUniformLocation( mGLProgram, name.c_str() ), 1, glm::value_ptr( value ) );
+  }
+
   // Set material props
   void setTexture( const std::string& name, unsigned int textureId ) const;
   void setColor( const std::string& colorName, Color colorValue ) const;
+
+  void setPointLights( std::vector<PointLight> pointLights ) const {
+    // TODO: check MAX_POINT_LIGHTS
+    GLuint loc = glGetUniformLocation( mGLProgram, "NumActivePointLights" );
+    setInt( "NumActivePointLights", pointLights.size() );
+
+    for ( int i = 0; i < pointLights.size(); i++ ) {
+      std::string lightUniform = "PointLights[" + std::to_string( i ) + "]";
+      setFloat( lightUniform + ".Intensity", pointLights[i].Intensity );
+      setVec3Float( lightUniform + ".Color", pointLights[i].Color );
+      setVec3Float( lightUniform + ".Position", pointLights[i].Position );
+    }
+  }
 
   // Set model props
   void setModelMatrix( const glm::mat4& modelMatrix ) const;

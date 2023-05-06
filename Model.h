@@ -17,7 +17,7 @@ class PhongMaterial;
 
 class Model {
 public:
-  Model( VertexList& vertices, UIntList& indices, PhongMaterial& material )
+  Model( VertexList& vertices, UIntList& indices, const PhongMaterial& material )
       : mVertices( vertices ), mIndices( indices ), mMaterial( material ) {
     deviceLoad();
   }
@@ -53,7 +53,7 @@ private:
   VertexList mVertices    = {};
   UIntList mIndices       = {};
   glm::mat4 mTransform4x4 = glm::mat4( 1.0f );
-  PhongMaterial& mMaterial;
+  const PhongMaterial& mMaterial;
 
   // OpenGL vars
   unsigned int mGlVBO {};

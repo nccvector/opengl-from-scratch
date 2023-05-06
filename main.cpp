@@ -11,6 +11,7 @@
 #include "Model.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Light.h"
 #include "Types.h"
 
 // GLM
@@ -179,6 +180,14 @@ public:
     PhongMaterial material( mTextures );
     mMaterials.push_back( material );
 
+    // Create lights
+    PointLight pointLight = {
+        1.0,
+        Color( 0.0f, 1.0f, 0.0f ),
+        Vec3( 1.0f, 1.0f, 1.0f ),
+    };
+    mPointLights.push_back( pointLight );
+
     // Push some default textures and materials before calling this!
     LoadModelsFromFile( "models/bunny.obj", 5.0f );
     LoadModelsFromFile( "models/cube.obj", 0.5f );
@@ -224,13 +233,17 @@ public:
       // Applying render transforms
       int width, height;
       glfwGetWindowSize( mWindow, &width, &height );
-      glm::mat4 projection = glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
+      glm::mat4 projection =
+          glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
 
       // Send view projection transforms to shader
       mShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
 
       // Enable shader
       mShader->use();
+
+      // Send light data to shader
+      mShader->setPointLights( mPointLights );
 
       // Draw models
       for ( auto model : mModels ) {
@@ -255,6 +268,7 @@ private:
   std::vector<Texture> mTextures;
   std::vector<PhongMaterial> mMaterials;
   std::vector<Model> mModels;
+  std::vector<PointLight> mPointLights;
 };
 
 int main() {
