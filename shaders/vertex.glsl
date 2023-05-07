@@ -14,12 +14,13 @@ out vec2 fs_texCoord;
 void main()
 {
     vec4 position = Model * vec4(vs_position, 1.0);
+    vec4 normal = Model * vec4(vs_normal, 0.0);
 
     // final gl_Position
     gl_Position = Projection * View * position;
 
     // fragment shader inputs
     fs_position = position.xyz;
-    fs_normal = vs_normal;
+    fs_normal = normal.xyz;
     fs_texCoord = vs_texCoord;
 }
