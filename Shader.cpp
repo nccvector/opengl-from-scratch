@@ -22,45 +22,41 @@ Shader::Shader( const std::string& vertexPath, const std::string& fragmentPath )
   mGLProgram = createProgram( mGLVertexShader, mGLFragmentShader );
   validateProgram( mGLProgram );
 }
+
 Shader::~Shader() {
   glDeleteShader( mGLVertexShader );
   glDeleteShader( mGLFragmentShader );
   glDeleteProgram( mGLProgram );
 }
-[[maybe_unused]] unsigned int Shader::getId() const {
+
+unsigned int Shader::getId() const {
   return mGLProgram;
 }
+
 void Shader::use( const unsigned int program ) {
   glUseProgram( program );
 }
-[[maybe_unused]] void Shader::setBool( const std::string& name, bool value ) const {
-  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (int) value );
-}
-[[maybe_unused]] void Shader::setInt( const std::string& name, int value ) const {
-  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), value );
-}
-[[maybe_unused]] void Shader::setFloat( const std::string& name, float value ) const {
-  glUniform1f( glGetUniformLocation( mGLProgram, name.c_str() ), value );
-}
-void Shader::setTexture( const std::string& name, unsigned int textureId ) const {
-  glUniform1i( glGetUniformLocation( mGLProgram, name.c_str() ), (GLint) textureId );
-}
+
 void Shader::setModelMatrix( const glm::mat4& modelMatrix ) const {
   glUniformMatrix4fv( glGetUniformLocation( mGLProgram, "Model" ), 1, GL_FALSE, glm::value_ptr( modelMatrix ) );
 }
+
 void Shader::setViewMatrix( const glm::mat4& viewMatrix ) const {
   glUniformMatrix4fv( glGetUniformLocation( mGLProgram, "View" ), 1, GL_FALSE, glm::value_ptr( viewMatrix ) );
 }
+
 void Shader::setProjectionMatrix( const glm::mat4& projectionMatrix ) const {
   glUniformMatrix4fv(
       glGetUniformLocation( mGLProgram, "Projection" ), 1, GL_FALSE, glm::value_ptr( projectionMatrix ) );
 }
+
 void Shader::setModelViewProjectionMatrix(
     const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix ) const {
   setModelMatrix( modelMatrix );
   setViewMatrix( viewMatrix );
   setProjectionMatrix( projectionMatrix );
 }
+
 std::string Shader::loadShaderString( const std::string& filepath ) {
   std::ostringstream stringStream;
   std::ifstream inputFileStream( filepath );
@@ -69,6 +65,7 @@ std::string Shader::loadShaderString( const std::string& filepath ) {
   std::string shaderString( stringStream.str() );
   return shaderString;
 }
+
 unsigned int Shader::createVertexShader( const std::string& vertexPath ) {
   const std::string& vertexShaderString = loadShaderString( vertexPath );
   const char* vertexShaderSource        = vertexShaderString.c_str();
@@ -78,6 +75,7 @@ unsigned int Shader::createVertexShader( const std::string& vertexPath ) {
   glCompileShader( vertexShader );
   return vertexShader;
 }
+
 unsigned int Shader::createFragmentShader( const std::string& fragmentPath ) {
   const std::string& fragmentShaderString = loadShaderString( fragmentPath );
   const char* fragmentShaderSource        = fragmentShaderString.c_str();
@@ -87,6 +85,7 @@ unsigned int Shader::createFragmentShader( const std::string& fragmentPath ) {
   glCompileShader( fragmentShader );
   return fragmentShader;
 }
+
 unsigned int Shader::createProgram( const unsigned int vertexShader, const unsigned int fragmentShader ) {
   // Shader program:
   //    A shader program object is the final linked version of multiple shaders combined. To
@@ -100,6 +99,7 @@ unsigned int Shader::createProgram( const unsigned int vertexShader, const unsig
   glLinkProgram( program );
   return program;
 }
+
 void Shader::validateShader( unsigned int shader ) {
   int success;
   char infoLog[512];
@@ -109,6 +109,7 @@ void Shader::validateShader( unsigned int shader ) {
     std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
   }
 }
+
 void Shader::validateProgram( const unsigned int program ) {
   int success;
   char infoLog[512];
@@ -118,12 +119,11 @@ void Shader::validateProgram( const unsigned int program ) {
     std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
   }
 }
+
 void Shader::use() const {
   use( mGLProgram );
 }
-void Shader::setColor( const std::string& colorName, Color colorValue ) const {
-  glUniform3f( glGetUniformLocation( mGLProgram, colorName.c_str() ), colorValue.r, colorValue.g, colorValue.b );
-}
+
 void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
   setModelMatrix( model.getTransform() );
@@ -131,23 +131,22 @@ void Shader::draw( const Model& model ) const {
   // Bind Material TODO: check for compatibility with this shader before binding
   const PhongMaterial& material = model.getMaterial();
 
-  int texUnit = 0;
-  for (const Texture& texture : material.getTextures())
-  {
-    // Activate texture unit
-    glActiveTexture(GL_TEXTURE0 + texUnit);
+  // Set colors
+  setTextureVec3Float( TextureIndex::Ambient, material.mColorAmbient );
+  setTextureVec3Float( TextureIndex::Diffuse, material.mColorDiffuse );
+  setTextureVec3Float( TextureIndex::Specular, material.mColorSpecular );
 
-    // Assign texture unit to appropriate uniform
-    std::string textureUniform = "Texture" + std::to_string(texUnit);
-    setTexture(textureUniform, texUnit);
-    glBindTexture(GL_TEXTURE_2D, texture.getId());
+  // Activate texture unit
+  Texture textureDiffuse = material.getTextures()[0];
+  glActiveTexture( GL_TEXTURE0 );
+  setTextureSampler2D( TextureIndex::Diffuse, GL_TEXTURE0 );
+  glBindTexture( GL_TEXTURE_2D, textureDiffuse.getId() ); // binding texture to appropriate texture unit
 
-    texUnit += 1;
-  }
-  glActiveTexture(GL_TEXTURE0);
+  // Reset to GL_TEXTURE0 in case after binding multiple textures
+  glActiveTexture( GL_TEXTURE0 );
 
   // Draw model
-  glBindVertexArray( model.getVAO());
+  glBindVertexArray( model.getVAO() );
   glDrawElements( GL_TRIANGLES, model.getSize(), GL_UNSIGNED_INT, 0 );
   glBindVertexArray( 0 ); // unbind
 }

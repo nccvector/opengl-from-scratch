@@ -184,7 +184,7 @@ public:
     PointLight pointLight = {
         1.0,
         Color( 0.0f, 1.0f, 0.0f ),
-        Vec3( 1.0f, 1.0f, 1.0f ),
+        Vec3( 10.0f, 10.0f, 10.0f ),
     };
     mPointLights.push_back( pointLight );
 

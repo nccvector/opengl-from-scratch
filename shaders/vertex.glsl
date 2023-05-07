@@ -7,13 +7,19 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
-out vec3 fs_color;
+out vec3 fs_position;
+out vec3 fs_normal;
 out vec2 fs_texCoord;
 
 void main()
 {
-    gl_Position = Projection * View * Model * vec4(vs_position, 1.0);
+    vec4 position = Model * vec4(vs_position, 1.0);
 
-    fs_color = vs_texCoord.xyx;
+    // final gl_Position
+    gl_Position = Projection * View * position;
+
+    // fragment shader inputs
+    fs_position = position.xyz;
+    fs_normal = vs_normal;
     fs_texCoord = vs_texCoord;
 }

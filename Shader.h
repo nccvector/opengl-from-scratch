@@ -21,6 +21,8 @@
 class Model;
 struct PointLight;
 
+enum TextureIndex { Ambient = 0, Diffuse, Specular };
+
 class Shader {
 public:
   Shader( const std::string& vertexPath, const std::string& fragmentPath );
@@ -30,28 +32,40 @@ public:
   static void use( unsigned int program );
   void use() const;
 
-  void setBool( const std::string& name, bool value ) const;
-  void setInt( const std::string& name, int value ) const;
-  void setFloat( const std::string& name, float value ) const;
+  void setTextureSampler2D( TextureIndex textureIndex, unsigned int textureId ) const {
+    std::string textureUniform = "TextureSampler2DArray[" + std::to_string( textureIndex ) + "]";
 
-  void setVec3Float( const std::string& name, Vec3 value ) const {
-    glUniform3fv( glGetUniformLocation( mGLProgram, name.c_str() ), 1, glm::value_ptr( value ) );
+    glUniform1i( glGetUniformLocation( mGLProgram, textureUniform.c_str() ), (GLint) textureId );
+
+    // Mark active
+    std::string textureActiveStatusUniform = "TextureActiveStatusArray[" + std::to_string( textureIndex ) + "]";
+    glUniform1i( glGetUniformLocation( mGLProgram, textureActiveStatusUniform.c_str() ), (int) true );
   }
 
-  // Set material props
-  void setTexture( const std::string& name, unsigned int textureId ) const;
-  void setColor( const std::string& colorName, Color colorValue ) const;
+  void setTextureVec3Float( TextureIndex textureIndex, Vec3 value ) const {
+    std::string vec3Uniform = "TexutreVec3FloatArray[" + std::to_string( textureIndex ) + "]";
+    glUniform3fv( glGetUniformLocation( mGLProgram, vec3Uniform.c_str() ), 1, glm::value_ptr( value ) );
+  }
+
+  void setTextureFloat( TextureIndex textureIndex, float value ) const {
+    std::string floatUniform = "TextureFloatArray[" + std::to_string( textureIndex ) + "]";
+    glUniform1f( glGetUniformLocation( mGLProgram, floatUniform.c_str() ), value );
+  }
 
   void setPointLights( std::vector<PointLight> pointLights ) const {
     // TODO: check MAX_POINT_LIGHTS
-    GLuint loc = glGetUniformLocation( mGLProgram, "NumActivePointLights" );
-    setInt( "NumActivePointLights", pointLights.size() );
+    glUniform1i( glGetUniformLocation( mGLProgram, "NumActivePointLights" ), pointLights.size() );
 
     for ( int i = 0; i < pointLights.size(); i++ ) {
-      std::string lightUniform = "PointLights[" + std::to_string( i ) + "]";
-      setFloat( lightUniform + ".Intensity", pointLights[i].Intensity );
-      setVec3Float( lightUniform + ".Color", pointLights[i].Color );
-      setVec3Float( lightUniform + ".Position", pointLights[i].Position );
+      std::string lightUniform          = "PointLights[" + std::to_string( i ) + "]";
+      std::string lightIntensityUniform = lightUniform + ".Intensity";
+      std::string lightColorUniform     = lightUniform + ".Color";
+      std::string lightPositionUniform  = lightUniform + ".Position";
+      glUniform1f( glGetUniformLocation( mGLProgram, lightIntensityUniform.c_str() ), pointLights[i].Intensity );
+      glUniform3fv(
+          glGetUniformLocation( mGLProgram, lightColorUniform.c_str() ), 1, glm::value_ptr( pointLights[i].Color ) );
+      glUniform3fv( glGetUniformLocation( mGLProgram, lightPositionUniform.c_str() ), 1,
+          glm::value_ptr( pointLights[i].Position ) );
     }
   }
 

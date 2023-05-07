@@ -14,7 +14,7 @@ class Shader;
 
 class PhongMaterial {
 public:
-  explicit PhongMaterial( const std::vector<Texture>& textures, Color colorAmbient = Color( 1.0f ),
+  explicit PhongMaterial( const std::vector<Texture>& textures, Color colorAmbient = Color( 0.01f ),
       Color colorDiffuse = Color( 0.5f ), Color colorSpecular = Color( 1.0f ) )
       : mTextures( textures ), mColorAmbient( colorAmbient ), mColorDiffuse( colorDiffuse ),
         mColorSpecular( colorSpecular ) {};
@@ -23,7 +23,7 @@ public:
     return mTextures;
   }
 
-private:
+public:
   Color mColorAmbient;
   Color mColorDiffuse;
   Color mColorSpecular;
