@@ -27,8 +27,7 @@ struct Model {
 };
 
 namespace ModelTools {
-void LoadOnDevice(
-    unsigned int& VAO, unsigned int& VBO, unsigned int& EBO, const VertexList& vertices, const UIntList& indices );
+void LoadOnDevice( Model& model );
 }
 
 #endif // OPENGL_FROM_SCRATCH_MODEL_H

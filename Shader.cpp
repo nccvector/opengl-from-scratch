@@ -140,7 +140,7 @@ void Shader::draw( const Model& model ) const {
   Texture textureDiffuse = material.Textures[0];
   glActiveTexture( GL_TEXTURE0 );
   setTextureSampler2D( TextureIndex::Diffuse, GL_TEXTURE0 );
-  glBindTexture( GL_TEXTURE_2D, textureDiffuse.getId() ); // binding texture to appropriate texture unit
+  glBindTexture( GL_TEXTURE_2D, textureDiffuse.GLID ); // binding texture to appropriate texture unit
 
   // Reset to GL_TEXTURE0 in case after binding multiple textures
   glActiveTexture( GL_TEXTURE0 );

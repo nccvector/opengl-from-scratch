@@ -6,25 +6,24 @@
 #include "Model.h"
 
 namespace ModelTools {
-void LoadOnDevice(
-    unsigned int& VAO, unsigned int& VBO, unsigned int& EBO, const VertexList& vertices, const UIntList& indices ) {
+void LoadOnDevice( Model& model ) {
   // Create a vertex buffer
-  glGenBuffers( 1, &VBO );
+  glGenBuffers( 1, &( model._VBO ) );
 
   // Create a vertex array object
-  glGenVertexArrays( 1, &VAO );
+  glGenVertexArrays( 1, &( model._VAO ) );
 
   // Create an index buffer
-  glGenBuffers( 1, &EBO );
+  glGenBuffers( 1, &( model._EBO ) );
 
   // 1. Bind VAO
-  glBindVertexArray( VAO );
+  glBindVertexArray( model._VAO );
   // 2. Bind VBO and copy vertex data
-  glBindBuffer( GL_ARRAY_BUFFER, VBO );
-  glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * vertices.size(), &vertices[0], GL_STATIC_DRAW );
+  glBindBuffer( GL_ARRAY_BUFFER, model._VBO );
+  glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * model.Vertices.size(), &(model.Vertices)[0], GL_STATIC_DRAW );
   // 3. Bind EBO and copy index data
-  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, EBO );
-  glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * indices.size(), &indices[0], GL_STATIC_DRAW );
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, model._EBO );
+  glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( unsigned int ) * model.Indices.size(), &(model.Indices)[0], GL_STATIC_DRAW );
 
   // 4. Linking vertex attributes (how the data is layed out in memory)
   // OpenGL does not know how the vertices are layed out in memory

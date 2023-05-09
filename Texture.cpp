@@ -11,12 +11,23 @@
 
 #include "Texture.h"
 
-Texture::Texture( const std::string& texturePath ) {
+namespace TextureTools {
+void LoadOnHost( const char* texturePath, Texture& texture ) {
+  // load and generate the texture
+  stbi_set_flip_vertically_on_load( true );
+  texture._data = stbi_load( texturePath, &texture.Width, &texture.Height, &texture.Channels, 0 );
+}
+
+void FreeOnHost( unsigned char* data ) {
+  stbi_image_free( data );
+}
+
+void LoadOnDevice( Texture& texture ) {
   // Create GL texture object
-  glGenTextures( 1, &mGLTexture );
+  glGenTextures( 1, &( texture.GLID ) );
 
   glActiveTexture( GL_TEXTURE0 );
-  glBindTexture( GL_TEXTURE_2D, mGLTexture );
+  glBindTexture( GL_TEXTURE_2D, texture.GLID );
 
   // set the texture wrapping/filtering options (on the currently bound texture object)
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -24,23 +35,12 @@ Texture::Texture( const std::string& texturePath ) {
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
   glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-  // load and generate the texture
-  stbi_set_flip_vertically_on_load( true );
-  mData = stbi_load( texturePath.c_str(), &mWidth, &mHeight, &mNumChannels, 0 );
-
   // Copying texture from host to device
-  if ( mData ) {
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, mData );
+  if ( texture._data ) {
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, texture.Width, texture.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture._data );
     glGenerateMipmap( GL_TEXTURE_2D );
-  }
-  else
-  {
+  } else {
     std::cerr << "Could not bind texture!" << std::endl;
   }
-
-  stbi_image_free( mData );
 }
-
-unsigned int Texture::getId() const {
-  return mGLTexture;
-}
+} // namespace TextureTools

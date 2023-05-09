@@ -7,20 +7,17 @@
 
 #include <iostream>
 
-class Texture {
-
-public:
-  explicit Texture( const std::string& texturePath );
-
-  [[nodiscard]] unsigned int getId() const;
-
-private:
-  const char* mName;
-  unsigned char* mData;
-  int mWidth {};
-  int mHeight {};
-  int mNumChannels {};
-  unsigned int mGLTexture {};
+struct Texture {
+  int Width {};
+  int Height {};
+  int Channels {};
+  unsigned int GLID {};
+  unsigned char* _data = nullptr;
 };
 
+namespace TextureTools {
+void LoadOnHost( const char* texturePath, Texture& texture);
+void FreeOnHost( unsigned char* data );
+void LoadOnDevice( Texture& texture );
+} // namespace TextureTools
 #endif // OPENGL_FROM_SCRATCH_TEXTURE_H

@@ -165,8 +165,7 @@ public:
       }
 
       Model newModel = { vlist, ilist, glm::mat4( 1.0 ), mMaterials[0] };
-      ModelTools::LoadOnDevice(
-          newModel._VAO, newModel._VBO, newModel._EBO, newModel.Vertices, newModel.Indices ); // Load on device
+      ModelTools::LoadOnDevice( newModel); // load on device
       newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
       mModels.push_back( newModel );
     }
@@ -174,7 +173,11 @@ public:
 
   void run() {
     // Load textures
-    Texture newTexture( "textures/UVMap.png" );
+    Texture newTexture;
+    TextureTools::LoadOnHost("textures/UVMap.png", newTexture);
+    TextureTools::LoadOnDevice(newTexture);
+    TextureTools::FreeOnHost( newTexture._data );
+
     mTextures.push_back( newTexture );
 
     // Create a Material
