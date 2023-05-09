@@ -164,9 +164,10 @@ public:
         }
       }
 
-      Model newModel( vlist, ilist, mMaterials[0] );
-      glm::mat4 transform = newModel.getTransform();
-      newModel.setTransform( glm::scale( transform, glm::vec3( scale ) ) );
+      Model newModel = { vlist, ilist, glm::mat4( 1.0 ), mMaterials[0] };
+      ModelTools::LoadOnDevice(
+          newModel._VAO, newModel._VBO, newModel._EBO, newModel.Vertices, newModel.Indices ); // Load on device
+      newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
       mModels.push_back( newModel );
     }
   }
@@ -177,7 +178,8 @@ public:
     mTextures.push_back( newTexture );
 
     // Create a Material
-    PhongMaterial material( mTextures );
+    PhongMaterial material = { Color( 0.01 ), Color( 0.5 ), Color( 1.0 ), mTextures };
+
     mMaterials.push_back( material );
 
     // Create lights
@@ -213,10 +215,8 @@ public:
       float angle = timeCurrentFrame / 1000.0f;
 
       for ( int i = 0; i < mModels.size(); i++ ) {
-        Model& model             = mModels[i];
-        glm::mat4 modelTransform = model.getTransform();
-        modelTransform           = glm::rotate( modelTransform, angle, glm::vec3( 0, 1, 0 ) );
-        model.setTransform( modelTransform );
+        Model& model    = mModels[i];
+        model.Transform = glm::rotate( model.Transform, angle, glm::vec3( 0, 1, 0 ) );
       }
 
       // Update View TODO: view can also be a model

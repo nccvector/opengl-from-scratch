@@ -126,18 +126,18 @@ void Shader::use() const {
 
 void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
-  setModelMatrix( model.getTransform() );
+  setModelMatrix( model.Transform );
 
   // Bind Material TODO: check for compatibility with this shader before binding
-  const PhongMaterial& material = model.getMaterial();
+  const PhongMaterial& material = model.Material;
 
   // Set colors
-  setTextureVec3Float( TextureIndex::Ambient, material.mColorAmbient );
-  setTextureVec3Float( TextureIndex::Diffuse, material.mColorDiffuse );
-  setTextureVec3Float( TextureIndex::Specular, material.mColorSpecular );
+  setTextureVec3Float( TextureIndex::Ambient, material.ColorAmbient );
+  setTextureVec3Float( TextureIndex::Diffuse, material.ColorDiffuse );
+  setTextureVec3Float( TextureIndex::Specular, material.ColorSpecular );
 
   // Activate texture unit
-  Texture textureDiffuse = material.getTextures()[0];
+  Texture textureDiffuse = material.Textures[0];
   glActiveTexture( GL_TEXTURE0 );
   setTextureSampler2D( TextureIndex::Diffuse, GL_TEXTURE0 );
   glBindTexture( GL_TEXTURE_2D, textureDiffuse.getId() ); // binding texture to appropriate texture unit
@@ -146,7 +146,7 @@ void Shader::draw( const Model& model ) const {
   glActiveTexture( GL_TEXTURE0 );
 
   // Draw model
-  glBindVertexArray( model.getVAO() );
-  glDrawElements( GL_TRIANGLES, model.getSize(), GL_UNSIGNED_INT, 0 );
+  glBindVertexArray( model._VAO );
+  glDrawElements( GL_TRIANGLES, model.Indices.size(), GL_UNSIGNED_INT, 0 );
   glBindVertexArray( 0 ); // unbind
 }

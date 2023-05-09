@@ -10,26 +10,12 @@
 #include "Shader.h"
 #include "Texture.h"
 
-class Shader;
+struct PhongMaterial{
+  Color ColorAmbient {0.01f};
+  Color ColorDiffuse {0.5f};
+  Color ColorSpecular {1.0f};
 
-class PhongMaterial {
-public:
-  explicit PhongMaterial( const std::vector<Texture>& textures, Color colorAmbient = Color( 0.01f ),
-      Color colorDiffuse = Color( 0.5f ), Color colorSpecular = Color( 1.0f ) )
-      : mTextures( textures ), mColorAmbient( colorAmbient ), mColorDiffuse( colorDiffuse ),
-        mColorSpecular( colorSpecular ) {};
-
-  inline const std::vector<Texture> getTextures() const {
-    return mTextures;
-  }
-
-public:
-  Color mColorAmbient;
-  Color mColorDiffuse;
-  Color mColorSpecular;
-
-  std::vector<Texture> mTextures;
+  const std::vector<Texture>& Textures;
 };
-
 
 #endif // OPENGL_FROM_SCRATCH_MATERIAL_H
