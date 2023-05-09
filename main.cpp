@@ -51,6 +51,7 @@ public:
     }
 
     glfwMakeContextCurrent( mWindow );
+    glfwSwapInterval( 0 );
     glfwSetFramebufferSizeCallback( mWindow, resizeCallback );
 
     return 0;
@@ -165,7 +166,7 @@ public:
       }
 
       Model newModel = { vlist, ilist, glm::mat4( 1.0 ), mMaterials[0] };
-      ModelTools::LoadOnDevice( newModel); // load on device
+      ModelTools::LoadOnDevice( newModel ); // load on device
       newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
       mModels.push_back( newModel );
     }
@@ -174,8 +175,8 @@ public:
   void run() {
     // Load textures
     Texture newTexture;
-    TextureTools::LoadOnHost("textures/UVMap.png", newTexture);
-    TextureTools::LoadOnDevice(newTexture);
+    TextureTools::LoadOnHost( "textures/UVMap.png", newTexture );
+    TextureTools::LoadOnDevice( newTexture );
     TextureTools::FreeOnHost( newTexture._data );
 
     mTextures.push_back( newTexture );
@@ -203,6 +204,8 @@ public:
     while ( !glfwWindowShouldClose( mWindow ) ) {
       timeCurrentFrame = (float) glfwGetTime();
       deltaTime        = timeCurrentFrame - timeLastFrame;
+
+      std::cout << "fps: " << 1 / deltaTime << std::endl;
 
       // Inputs
       processInputs( mWindow );
