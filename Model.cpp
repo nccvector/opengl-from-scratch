@@ -6,6 +6,7 @@
 #include "Model.h"
 
 namespace ModelTools {
+
 void LoadOnDevice( Model& model ) {
   // Create a vertex buffer
   glGenBuffers( 1, &( model._VBO ) );

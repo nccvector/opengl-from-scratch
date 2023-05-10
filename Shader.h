@@ -17,9 +17,11 @@
 
 #include "Model.h"
 #include "Light.h"
+#include "Material.h"
 
 class Model;
 struct PointLight;
+struct PhongMaterial;
 
 enum TextureIndex { Ambient = 0, Diffuse, Specular };
 
@@ -79,6 +81,7 @@ public:
       const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix ) const;
 
   // Draw
+  virtual void bindMaterial( const PhongMaterial& material) const;
   void draw( const Model& model ) const;
 
   // Statics
@@ -96,5 +99,12 @@ private:
   unsigned int mGLProgram;
 };
 
+class PhongShader: public Shader
+{
+public:
+  PhongShader( const std::string& vertexPath, const std::string& fragmentPath ) : Shader(vertexPath, fragmentPath) {}
+
+  void bindMaterial(const PhongMaterial& material) const override;
+};
 
 #endif // OPENGL_FROM_SCRATCH_SHADER_H

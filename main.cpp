@@ -32,7 +32,7 @@ public:
 
   ~Application() {
     // TODO: Delete all the models before shaders
-    delete mShader;
+    delete mPhongShader;
     glfwTerminate();
   }
 
@@ -68,7 +68,7 @@ public:
     // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
-    mShader = new Shader( "./shaders/vertex.glsl", "./shaders/fragment.glsl" );
+    mPhongShader = new PhongShader( "./shaders/PhongVertex.glsl", "./shaders/PhongFragment.glsl" );
 
     // ================================================================================
 
@@ -244,17 +244,17 @@ public:
           glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
 
       // Send view projection transforms to shader
-      mShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
+      mPhongShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
 
       // Enable shader
-      mShader->use();
+      mPhongShader->use();
 
       // Send light data to shader
-      mShader->setPointLights( mPointLights );
+      mPhongShader->setPointLights( mPointLights );
 
       // Draw models
       for ( auto model : mModels ) {
-        mShader->draw( model );
+        mPhongShader->draw( model );
       }
 
       // Swap buffers and poll I/O events
@@ -271,7 +271,7 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // Application vars
-  Shader* mShader = nullptr; // Only one shader supported as of now
+  PhongShader* mPhongShader = nullptr; // Only one shader supported as of now
   std::vector<Texture> mTextures;
   std::vector<PhongMaterial> mMaterials;
   std::vector<Model> mModels;

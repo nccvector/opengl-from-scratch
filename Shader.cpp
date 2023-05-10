@@ -124,12 +124,24 @@ void Shader::use() const {
   use( mGLProgram );
 }
 
+void Shader::bindMaterial(const PhongMaterial& material) const{
+  std::cerr << "bindMaterial invoked from base class" << std::endl;
+}
+
 void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
   setModelMatrix( model.Transform );
 
+  bindMaterial(model.Material);
+
+  // Draw model
+  glBindVertexArray( model._VAO );
+  glDrawElements( GL_TRIANGLES, model.Indices.size(), GL_UNSIGNED_INT, 0 );
+  glBindVertexArray( 0 ); // unbind
+}
+
+void PhongShader::bindMaterial( const PhongMaterial& material ) const {
   // Bind Material TODO: check for compatibility with this shader before binding
-  const PhongMaterial& material = model.Material;
 
   // Set colors
   setTextureVec3Float( TextureIndex::Ambient, material.ColorAmbient );
@@ -144,9 +156,4 @@ void Shader::draw( const Model& model ) const {
 
   // Reset to GL_TEXTURE0 in case after binding multiple textures
   glActiveTexture( GL_TEXTURE0 );
-
-  // Draw model
-  glBindVertexArray( model._VAO );
-  glDrawElements( GL_TRIANGLES, model.Indices.size(), GL_UNSIGNED_INT, 0 );
-  glBindVertexArray( 0 ); // unbind
 }
