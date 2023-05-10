@@ -165,6 +165,7 @@ public:
         }
       }
 
+      // TODO: Consider deleting host side model data in case of memory shortage
       Model newModel = { vlist, ilist, glm::mat4( 1.0 ), mMaterials[0] };
       ModelTools::LoadOnDevice( newModel ); // load on device
       newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
