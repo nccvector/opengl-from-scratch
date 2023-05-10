@@ -183,7 +183,7 @@ public:
     mTextures.push_back( newTexture );
 
     // Create a Material
-    PhongMaterial material = { Color( 0.01 ), Color( 0.5 ), Color( 1.0 ), mTextures };
+    Material material = { Color( 0.01 ), Color( 0.5 ), Color( 1.0 ), mTextures };
 
     mMaterials.push_back( material );
 
@@ -273,7 +273,7 @@ private:
   // Application vars
   PhongShader* mPhongShader = nullptr; // Only one shader supported as of now
   std::vector<Texture> mTextures;
-  std::vector<PhongMaterial> mMaterials;
+  std::vector<Material> mMaterials;
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
 };

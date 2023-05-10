@@ -10,7 +10,7 @@
 #include "Shader.h"
 #include "Texture.h"
 
-struct PhongMaterial{
+struct Material {
   Color ColorAmbient {0.01f};
   Color ColorDiffuse {0.5f};
   Color ColorSpecular {1.0f};

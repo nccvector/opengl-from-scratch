@@ -13,14 +13,13 @@
 #include "Types.h"
 #include "Material.h"
 
-class PhongMaterial;
-
+class Material;
 
 struct Model {
   VertexList Vertices;
   UIntList Indices;
   glm::mat4 Transform;
-  const PhongMaterial& Material;
+  const Material& crMaterial;
   unsigned int _VBO {};
   unsigned int _VAO {};
   unsigned int _EBO {};

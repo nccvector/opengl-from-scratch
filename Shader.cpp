@@ -124,7 +124,7 @@ void Shader::use() const {
   use( mGLProgram );
 }
 
-void Shader::bindMaterial(const PhongMaterial& material) const{
+void Shader::bindMaterial(const Material& material) const{
   std::cerr << "bindMaterial invoked from base class" << std::endl;
 }
 
@@ -132,7 +132,7 @@ void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
   setModelMatrix( model.Transform );
 
-  bindMaterial(model.Material);
+  bindMaterial(model.crMaterial );
 
   // Draw model
   glBindVertexArray( model._VAO );
@@ -140,7 +140,7 @@ void Shader::draw( const Model& model ) const {
   glBindVertexArray( 0 ); // unbind
 }
 
-void PhongShader::bindMaterial( const PhongMaterial& material ) const {
+void PhongShader::bindMaterial( const Material& material ) const {
   // Bind Material TODO: check for compatibility with this shader before binding
 
   // Set colors
