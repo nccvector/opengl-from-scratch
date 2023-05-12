@@ -68,7 +68,7 @@ public:
     // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
-    mPhongShader = new PhongShader( "./shaders/PhongVertex.glsl", "./shaders/PhongFragment.glsl" );
+    mPhongShader = new PhongShader();
 
     // ================================================================================
 

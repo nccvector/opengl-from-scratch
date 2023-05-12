@@ -12,16 +12,6 @@
 
 #include "Shader.h"
 
-Shader::Shader( const std::string& vertexPath, const std::string& fragmentPath ) {
-  mGLVertexShader = createVertexShader( vertexPath );
-  validateShader( mGLVertexShader );
-
-  mGLFragmentShader = createFragmentShader( fragmentPath );
-  validateShader( mGLFragmentShader );
-
-  mGLProgram = createProgram( mGLVertexShader, mGLFragmentShader );
-  validateProgram( mGLProgram );
-}
 
 Shader::~Shader() {
   glDeleteShader( mGLVertexShader );
@@ -124,7 +114,7 @@ void Shader::use() const {
   use( mGLProgram );
 }
 
-void Shader::bindMaterial(const Material& material) const{
+void Shader::bindMaterial( const Material& material ) const {
   std::cerr << "bindMaterial invoked from base class" << std::endl;
 }
 
@@ -132,12 +122,23 @@ void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
   setModelMatrix( model.Transform );
 
-  bindMaterial(model.crMaterial );
+  bindMaterial( model.crMaterial );
 
   // Draw model
   glBindVertexArray( model._VAO );
   glDrawElements( GL_TRIANGLES, model.Indices.size(), GL_UNSIGNED_INT, 0 );
   glBindVertexArray( 0 ); // unbind
+}
+
+void PhongShader::load( const std::string& vertexPath, const std::string& fragmentPath ) {
+    mGLVertexShader = createVertexShader( vertexPath );
+    validateShader( mGLVertexShader );
+
+    mGLFragmentShader = createFragmentShader( fragmentPath );
+    validateShader( mGLFragmentShader );
+
+    mGLProgram = createProgram( mGLVertexShader, mGLFragmentShader );
+    validateProgram( mGLProgram );
 }
 
 void PhongShader::bindMaterial( const Material& material ) const {

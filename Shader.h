@@ -27,7 +27,6 @@ enum TextureIndex { Ambient = 0, Diffuse, Specular };
 
 class Shader {
 public:
-  Shader( const std::string& vertexPath, const std::string& fragmentPath );
   ~Shader();
 
   [[maybe_unused]] [[nodiscard]] unsigned int getId() const;
@@ -81,7 +80,8 @@ public:
       const glm::mat4& modelMatrix, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix ) const;
 
   // Draw
-  virtual void bindMaterial( const Material& material) const;
+  virtual void load( const std::string& vertexPath, const std::string& fragmentPath ) = 0;
+  virtual void bindMaterial( const Material& material ) const                         = 0;
   void draw( const Model& model ) const;
 
   // Statics
@@ -93,18 +93,20 @@ public:
   static void validateShader( unsigned int shader );
   static void validateProgram( unsigned int program );
 
-private:
+protected:
   unsigned int mGLVertexShader;
   unsigned int mGLFragmentShader;
   unsigned int mGLProgram;
 };
 
-class PhongShader: public Shader
-{
+class PhongShader : public Shader {
 public:
-  PhongShader( const std::string& vertexPath, const std::string& fragmentPath ) : Shader(vertexPath, fragmentPath) {}
+  PhongShader() {
+    load( "./shaders/PhongVertex.glsl", "./shaders/PhongFragment.glsl" );
+  }
 
-  void bindMaterial(const Material& material) const override;
+  void load( const std::string& vertexPath, const std::string& fragmentPath ) override;
+  void bindMaterial( const Material& material ) const override;
 };
 
 #endif // OPENGL_FROM_SCRATCH_SHADER_H
