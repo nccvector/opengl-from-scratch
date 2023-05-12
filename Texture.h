@@ -7,7 +7,11 @@
 
 #include <iostream>
 
+enum TextureType { Ambient = 0, Diffuse, Specular };
+
 struct Texture {
+  const char* Name;
+  TextureType Type;
   int Width {};
   int Height {};
   int Channels {};

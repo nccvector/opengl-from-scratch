@@ -17,13 +17,12 @@
 
 #include "Model.h"
 #include "Light.h"
+#include "Texture.h"
 #include "Material.h"
 
 class Model;
 struct PointLight;
 struct Material;
-
-enum TextureIndex { Ambient = 0, Diffuse, Specular };
 
 class Shader {
 public:
@@ -33,7 +32,7 @@ public:
   static void use( unsigned int program );
   void use() const;
 
-  void setTextureSampler2D( TextureIndex textureIndex, unsigned int textureId ) const {
+  void setTextureSampler2D( TextureType textureIndex, unsigned int textureId ) const {
     std::string textureUniform = "TextureSampler2DArray[" + std::to_string( textureIndex ) + "]";
 
     glUniform1i( glGetUniformLocation( mGLProgram, textureUniform.c_str() ), (GLint) textureId );
@@ -43,12 +42,12 @@ public:
     glUniform1i( glGetUniformLocation( mGLProgram, textureActiveStatusUniform.c_str() ), (int) true );
   }
 
-  void setTextureVec3Float( TextureIndex textureIndex, Vec3 value ) const {
+  void setTextureVec3Float( TextureType textureIndex, Vec3 value ) const {
     std::string vec3Uniform = "TexutreVec3FloatArray[" + std::to_string( textureIndex ) + "]";
     glUniform3fv( glGetUniformLocation( mGLProgram, vec3Uniform.c_str() ), 1, glm::value_ptr( value ) );
   }
 
-  void setTextureFloat( TextureIndex textureIndex, float value ) const {
+  void setTextureFloat( TextureType textureIndex, float value ) const {
     std::string floatUniform = "TextureFloatArray[" + std::to_string( textureIndex ) + "]";
     glUniform1f( glGetUniformLocation( mGLProgram, floatUniform.c_str() ), value );
   }

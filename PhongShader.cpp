@@ -20,14 +20,14 @@ void PhongShader::bindMaterial( const Material& material ) const {
   // Bind Material TODO: check for compatibility with this shader before binding
 
   // Set colors
-  setTextureVec3Float( TextureIndex::Ambient, material.ColorAmbient );
-  setTextureVec3Float( TextureIndex::Diffuse, material.ColorDiffuse );
-  setTextureVec3Float( TextureIndex::Specular, material.ColorSpecular );
+  setTextureVec3Float( TextureType::Ambient, material.ColorAmbient );
+  setTextureVec3Float( TextureType::Diffuse, material.ColorDiffuse );
+  setTextureVec3Float( TextureType::Specular, material.ColorSpecular );
 
   // Activate texture unit
   Texture textureDiffuse = material.Textures[0];
   glActiveTexture( GL_TEXTURE0 );
-  setTextureSampler2D( TextureIndex::Diffuse, GL_TEXTURE0 );
+  setTextureSampler2D( TextureType::Diffuse, GL_TEXTURE0 );
   glBindTexture( GL_TEXTURE_2D, textureDiffuse.GLID ); // binding texture to appropriate texture unit
 
   // Reset to GL_TEXTURE0 in case after binding multiple textures
