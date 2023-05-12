@@ -99,14 +99,6 @@ protected:
   unsigned int mGLProgram;
 };
 
-class PhongShader : public Shader {
-public:
-  PhongShader() {
-    load( "./shaders/PhongVertex.glsl", "./shaders/PhongFragment.glsl" );
-  }
 
-  void load( const std::string& vertexPath, const std::string& fragmentPath ) override;
-  void bindMaterial( const Material& material ) const override;
-};
 
 #endif // OPENGL_FROM_SCRATCH_SHADER_H

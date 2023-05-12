@@ -9,7 +9,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Model.h"
-#include "Shader.h"
+#include "PhongShader.h"
 #include "Texture.h"
 #include "Light.h"
 #include "Types.h"
