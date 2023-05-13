@@ -27,6 +27,8 @@
 #include <assimp/scene.h>
 #include <fstream>
 
+#include "Scene.h"
+
 class Application {
 public:
   explicit Application( const char* title = "My Application", int width = 800, int height = 600 ) : mTitle( title ) {
@@ -207,6 +209,15 @@ public:
     float deltaTime;
     auto timeLastFrame = (float) glfwGetTime();
     while ( !glfwWindowShouldClose( mWindow ) ) {
+      int width, height;
+      glfwGetWindowSize( mWindow, &width, &height );
+
+      int2                  fbSize = make_int2(width, height);
+      scene.resize(fbSize);
+      pixels.resize(fbSize.x * fbSize.y);
+      scene.render();
+      scene.download_pixels(pixels.data());
+
       timeCurrentFrame = (float) glfwGetTime();
       deltaTime        = timeCurrentFrame - timeLastFrame;
 
@@ -242,8 +253,7 @@ public:
       camera = glm::lookAt( cameraPosition, lookAt, upVector );
 
       // Applying render transforms
-      int width, height;
-      glfwGetWindowSize( mWindow, &width, &height );
+
       glm::mat4 projection =
           glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
 
@@ -280,6 +290,10 @@ private:
   std::vector<Material> mMaterials;
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
+
+  // optix vars
+  std::vector<uint32_t> pixels;
+  optix7tutorial::Scene scene;
 };
 
 int main() {

@@ -32,7 +32,6 @@ public:
   /*! download the rendered color buffer */
   void download_pixels(uint32_t h_pixels[]);
 
-protected:
   /*! helper function that initializes optix and checks for errors */
   void initOptix();
 
