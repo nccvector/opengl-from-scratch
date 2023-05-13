@@ -3,6 +3,11 @@ project(opengl-from-scratch)
 
 set(OpenGL_GL_PREFERENCE "GLVND")
 
+# optix stuff
+include(optix/CMakeLists.txt)
+cuda_compile_and_embed(embedded_ptx_code optix/DevicePrograms.cu)
+
+
 # Add opengl and glfw
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -24,8 +29,30 @@ message("INCLUDE_DIRS: " ${INCLUDE_DIRS})
 include_directories(${INCLUDE_DIRS})
 
 # Target ofs
-add_executable(ofs main.cpp ext/glad/src/glad.c Shader.cpp Shader.h Texture.cpp Texture.h Model.cpp Model.h Types.h Types.cpp Vertex.cpp Vertex.h Material.cpp Material.h Light.h PhongShader.h PhongShader.cpp)
+add_executable(ofs
+        ${embedded_ptx_code}
+        main.cpp
+        ext/glad/src/glad.c
+        Shader.cpp
+        Shader.h
+        Texture.cpp
+        Texture.h
+        Model.cpp
+        Model.h
+        Types.h
+        Types.cpp
+        Vertex.cpp
+        Vertex.h
+        Material.cpp
+        Material.h
+        Light.h
+        PhongShader.h
+        PhongShader.cpp
+        optix/Scene.cpp
+        optix/Scene.h
+        optix/LaunchParams.h)
 target_link_libraries(ofs
+        ${OptiX_LIBS}
         ${OPENGL_LIBRARIES}
         glfw
         ${ASSIMP_LIBRARIES})

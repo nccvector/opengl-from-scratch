@@ -5,6 +5,10 @@
 #include <iostream>
 #include <optional>
 
+#include "cuBuffer.h"
+#include <sutil/sutil.h>
+#include <sutil/vec_math.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -130,8 +134,8 @@ public:
     std::cout << "Import of scene " << filename << " succeeded." << std::endl;
 
     for ( unsigned int i = 0; i < g_scene->mNumMeshes; i++ ) {
-      VertexList vlist;
-      UIntList ilist;
+      VertexList vertexList;
+      UIntList indexList;
 
       const aiMesh* mesh = g_scene->mMeshes[i];
 
@@ -153,7 +157,7 @@ public:
           newVertex.TexCoord = glm::vec2( 0.0f );
         }
 
-        vlist.push_back( newVertex );
+        vertexList.push_back( newVertex );
       }
 
       // Filling in the indices data
@@ -161,12 +165,12 @@ public:
         aiFace face = mesh->mFaces[vf];
         for ( unsigned int vi = 0; vi < face.mNumIndices; vi++ ) {
           unsigned int aiIndex = face.mIndices[vi];
-          ilist.push_back( aiIndex );
+          indexList.push_back( aiIndex );
         }
       }
 
       // TODO: Consider deleting host side model data in case of memory shortage
-      Model newModel = { vlist, ilist, glm::mat4( 1.0 ), mMaterials[0] };
+      Model newModel = { vertexList, indexList, glm::mat4( 1.0 ), mMaterials[0] };
       ModelTools::LoadOnDevice( newModel ); // load on device
       newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
       mModels.push_back( newModel );
