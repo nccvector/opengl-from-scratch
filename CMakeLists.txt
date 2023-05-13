@@ -7,7 +7,6 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 include(optix/CMakeLists.txt)
 cuda_compile_and_embed(embedded_ptx_code optix/DevicePrograms.cu)
 
-
 # Add opengl and glfw
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -17,6 +16,17 @@ add_subdirectory(ext/glm)
 
 # Adding assimp using the find_package
 find_package(assimp PATHS ext/assimp REQUIRED)
+
+# Setup imgui
+include_directories(ext/imgui)
+set(IMGUI_SRCS
+        ext/imgui/imgui.cpp
+        ext/imgui/imgui_widgets.cpp
+        ext/imgui/imgui_tables.cpp
+        ext/imgui/imgui_impl_opengl3.cpp
+        ext/imgui/imgui_impl_glfw.cpp
+        ext/imgui/imgui_demo.cpp
+        ext/imgui/imgui_draw.cpp)
 
 set(INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/ext/glm/
@@ -31,6 +41,7 @@ include_directories(${INCLUDE_DIRS})
 # Target ofs
 add_executable(ofs
         ${embedded_ptx_code}
+        ${IMGUI_SRCS}
         main.cpp
         ext/glad/src/glad.c
         Shader.cpp
