@@ -39,6 +39,10 @@ public:
   explicit Application( const char* title = "My Application", int width = 800, int height = 600 ) : mTitle( title ) {
     initWindow( width, height );
     initGL( width, height );
+
+    // Initialize optixRenderTexture
+    optixRenderTexture = { "Optix Render", TextureType::Diffuse, width, height, 3 };
+    TextureTools::GenTextureOnDevice( optixRenderTexture );
   }
 
   ~Application() {
@@ -54,7 +58,7 @@ public:
     }
 
     // Glfw cleanup
-    glfwDestroyWindow(mWindow);
+    glfwDestroyWindow( mWindow );
     glfwTerminate();
   }
 
@@ -280,6 +284,11 @@ public:
       scene.render();
       scene.download_pixels( pixels.data() );
 
+      // Update optixRenderTexture from pixel data
+      optixRenderTexture._data = (unsigned char*) pixels.data();
+      TextureTools::UpdateTextureData( optixRenderTexture );
+      std::cout << "Optix Render Texture ID: " << optixRenderTexture.GLID << std::endl;
+
       timeCurrentFrame = (float) glfwGetTime();
       deltaTime        = timeCurrentFrame - timeLastFrame;
 
@@ -298,6 +307,9 @@ public:
 
         bool showDemoWindow = true;
         ImGui::ShowDemoWindow( &showDemoWindow );
+
+        // Optix render view
+        ImGui::Image((void*)(intptr_t)optixRenderTexture.GLID, ImVec2(512,512));
       }
 
       // Physics
@@ -352,8 +364,8 @@ public:
         int display_w, display_h;
         glfwGetFramebufferSize( mWindow, &display_w, &display_h );
         glViewport( 0, 0, display_w, display_h );
-//        glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-//        glClear( GL_COLOR_BUFFER_BIT );
+        //        glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
+        //        glClear( GL_COLOR_BUFFER_BIT );
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
       }
 
@@ -380,6 +392,7 @@ private:
   // optix vars
   std::vector<uint32_t> pixels;
   optix7tutorial::Scene scene;
+  Texture optixRenderTexture;
 };
 
 int main() {

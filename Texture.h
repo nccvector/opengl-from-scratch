@@ -20,8 +20,10 @@ struct Texture {
 };
 
 namespace TextureTools {
-void LoadOnHost( const char* texturePath, Texture& texture);
+void LoadOnHost( const char* texturePath, Texture& texture );
 void FreeOnHost( unsigned char* data );
+void GenTextureOnDevice( Texture& texture );
+void UpdateTextureData( Texture& texture );
 void LoadOnDevice( Texture& texture );
 } // namespace TextureTools
 #endif // OPENGL_FROM_SCRATCH_TEXTURE_H
