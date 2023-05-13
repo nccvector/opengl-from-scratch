@@ -153,35 +153,35 @@ public:
     if ( enableBackfaceCulling ) {
       glEnable( GL_CULL_FACE );
       glCullFace( GL_BACK );
+      glFrontFace( GL_CCW );
     }
     if ( enableDepthTest ) {
       glEnable( GL_DEPTH_TEST );
-      glFrontFace( GL_CCW );
     }
 
-        // Initializing frame buffer and renderTexture
-        {
-          glGenFramebuffers( 1, &mFramebuffer );
-          glBindFramebuffer( GL_FRAMEBUFFER, mFramebuffer );
+    // Initializing frame buffer and renderTexture
+    {
+      glGenFramebuffers( 1, &mFramebuffer );
+      glBindFramebuffer( GL_FRAMEBUFFER, mFramebuffer );
 
-          // Initialize render texture
-          mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
-          TextureTools::GenTextureOnDevice(mRenderTexture);
-          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+      // Initialize render texture
+      mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
+      TextureTools::GenTextureOnDevice(mRenderTexture);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-          glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mRenderTexture.GLID, 0 );
+      glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mRenderTexture.GLID, 0 );
 
-          // DEPTH
-          unsigned int rbo;
-          glGenRenderbuffers(1, &rbo);
-          glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-          glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-          glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      // DEPTH
+      unsigned int rbo;
+      glGenRenderbuffers(1, &rbo);
+      glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+      glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-          glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-          assert (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-        }
+      assert (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    }
 
     return 0;
   }
@@ -355,7 +355,7 @@ public:
           0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the upp
 
       // Clear background
-      glClearColor( 0.0f, 0.1f, 1.0f, 1.0f );
+      glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
       // Applying render transforms
@@ -398,13 +398,13 @@ public:
 
         // Render view
         ImGui::Begin( "Viewport" );
-        ImGui::Image( (void*) (intptr_t) mRenderTexture.GLID, ImVec2( 800, 600 ), ImVec2(1, 1), ImVec2(0, 0));
+        ImGui::Image( (void*) (intptr_t) mRenderTexture.GLID, ImVec2( 800, 600 ), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
 
-//        // Optix render view
-//        ImGui::Begin( "Optix" );
-//        ImGui::Image( (void*) (intptr_t) optixRenderTexture.GLID, ImVec2( 800, 600 ) );
-//        ImGui::End();
+        // Optix render view
+        ImGui::Begin( "Optix" );
+        ImGui::Image( (void*) (intptr_t) optixRenderTexture.GLID, ImVec2( 800, 600 ) );
+        ImGui::End();
       }
 
       // Drawing imgui
@@ -414,8 +414,6 @@ public:
         int display_w, display_h;
         glfwGetFramebufferSize( mWindow, &display_w, &display_h );
         glViewport( 0, 0, display_w, display_h );
-        //        glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-        //        glClear( GL_COLOR_BUFFER_BIT );
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
       }
 

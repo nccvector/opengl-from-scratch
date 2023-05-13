@@ -122,8 +122,7 @@ void Shader::draw( const Model& model ) const {
   // Set all the shader attributes
   setModelMatrix( model.Transform );
 
-//  bindMaterial( model.crMaterial );
-  // "Bind" the newly created texture : all future texture functions will modify this texture
+  bindMaterial( model.crMaterial );
 
   // Draw model
   glBindVertexArray( model._VAO );
