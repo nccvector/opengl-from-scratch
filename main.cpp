@@ -158,6 +158,31 @@ public:
       glEnable( GL_DEPTH_TEST );
       glFrontFace( GL_CCW );
     }
+
+        // Initializing frame buffer and renderTexture
+        {
+          glGenFramebuffers( 1, &mFramebuffer );
+          glBindFramebuffer( GL_FRAMEBUFFER, mFramebuffer );
+
+          // Initialize render texture
+          mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
+          TextureTools::GenTextureOnDevice(mRenderTexture);
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+          glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mRenderTexture.GLID, 0 );
+
+          // DEPTH
+          unsigned int rbo;
+          glGenRenderbuffers(1, &rbo);
+          glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+          glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+          glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+          glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+          assert (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+        }
+
     return 0;
   }
 
@@ -278,6 +303,7 @@ public:
       int width, height;
       glfwGetWindowSize( mWindow, &width, &height );
 
+      // Get pixels from optix
       int2 fbSize = make_int2( width, height );
       scene.resize( fbSize );
       pixels.resize( fbSize.x * fbSize.y );
@@ -298,26 +324,10 @@ public:
       glfwPollEvents();
       processInputs( mWindow );
 
-      // Imgui frame init
-      {
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        bool showDemoWindow = true;
-        ImGui::ShowDemoWindow( &showDemoWindow );
-
-        // Optix render view
-        ImGui::Image((void*)(intptr_t)optixRenderTexture.GLID, ImVec2(512,512));
-      }
-
       // Physics
 
       // Rendering
-      // Clear background
-      glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 
       // Update Models
       float angle = timeCurrentFrame / 1000.0f;
@@ -338,8 +348,17 @@ public:
       // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
       camera = glm::lookAt( cameraPosition, lookAt, upVector );
 
-      // Applying render transforms
+      // Bind render frame buffer before drawing scene
+      // Render to our framebuffer
+      glBindFramebuffer( GL_FRAMEBUFFER, mFramebuffer );
+      glViewport(
+          0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the upp
 
+      // Clear background
+      glClearColor( 0.0f, 0.1f, 1.0f, 1.0f );
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+      // Applying render transforms
       glm::mat4 projection =
           glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
 
@@ -355,6 +374,37 @@ public:
       // Draw models
       for ( auto model : mModels ) {
         mPhongShader->draw( model );
+      }
+
+      // Draw imgui on default frame buffer
+      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      glViewport(
+          0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the
+
+      // Clear background
+      glClearColor( 1.0f, 0.1f, 0.1f, 1.0f );
+      glEnable(GL_DEPTH_TEST);
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+      // Imgui frame init
+      {
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        bool showDemoWindow = true;
+        ImGui::ShowDemoWindow( &showDemoWindow );
+
+        // Render view
+        ImGui::Begin( "Viewport" );
+        ImGui::Image( (void*) (intptr_t) mRenderTexture.GLID, ImVec2( 800, 600 ), ImVec2(1, 1), ImVec2(0, 0));
+        ImGui::End();
+
+//        // Optix render view
+//        ImGui::Begin( "Optix" );
+//        ImGui::Image( (void*) (intptr_t) optixRenderTexture.GLID, ImVec2( 800, 600 ) );
+//        ImGui::End();
       }
 
       // Drawing imgui
@@ -374,6 +424,8 @@ public:
       glfwPollEvents();
 
       timeLastFrame = timeCurrentFrame;
+
+      //      return;
     }
   }
 
@@ -388,6 +440,8 @@ private:
   std::vector<Material> mMaterials;
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
+  unsigned int mFramebuffer;
+  Texture mRenderTexture;
 
   // optix vars
   std::vector<uint32_t> pixels;
