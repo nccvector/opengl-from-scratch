@@ -42,7 +42,7 @@ public:
 
     // RESIZE CAMERA???
     if ( mCamera != nullptr ) {
-      mCamera->resize( mWidth, mHeight );
+      mCamera->setAspectRatio( (float) mWidth / (float) mHeight );
     }
   }
 

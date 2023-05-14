@@ -10,23 +10,18 @@
 
 class Camera {
 public:
-  Camera(
-      int width = 800, int height = 600, float verticalFOV = 45.0f, float zNear = 0.0001f, float zFar = 100000.0f ) {
-    mWidth       = width;
-    mHeight      = height;
+  Camera(float verticalFOV = 45.0f, float aspectRatio=1.0f, float zNear = 0.0001f, float zFar = 100000.0f ) {
+    mAspectRatio = aspectRatio;
     mVerticalFOV = verticalFOV;
     mZNear       = zNear;
     mZFar        = zFar;
     mTransform   = glm::mat4( 1.0 );
-    mProjection  = glm::perspective( glm::radians( mVerticalFOV ), (float) mWidth / (float) mHeight, mZNear, mZFar );
+    mProjection  = glm::perspective( glm::radians( mVerticalFOV ), mAspectRatio, mZNear, mZFar );
   }
 
-  void resize( int width, int height ) {
-    mWidth  = width;
-    mHeight = height;
-
-    // Consistent projection on resize
-    mProjection = glm::perspective( glm::radians( mVerticalFOV ), (float) mWidth / (float) mHeight, mZNear, mZFar );
+  void setAspectRatio( float aspectRatio) {
+    mAspectRatio = aspectRatio;
+    mProjection = glm::perspective( glm::radians( mVerticalFOV), mAspectRatio, mZNear, mZFar );
   }
 
   void lookAt( glm::vec3 target ) {
@@ -34,7 +29,7 @@ public:
   }
 
   void setPosition( glm::vec3 position ) {
-    mTransform = glm::translate(mTransform, position - glm::vec3(mTransform[3]));
+    mTransform = glm::translate( mTransform, position - glm::vec3( mTransform[3] ) );
   }
 
   glm::mat4 getTransform() {
@@ -45,18 +40,9 @@ public:
     return mProjection;
   }
 
-  int getWidth(){
-    return mWidth;
-  }
-
-  int getHeight(){
-    return mHeight;
-  }
-
 private:
-  int mWidth;
-  int mHeight;
   float mVerticalFOV;
+  float mAspectRatio;
   float mZNear;
   float mZFar;
   glm::mat4 mTransform;
