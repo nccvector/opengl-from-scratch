@@ -200,6 +200,11 @@ public:
     ModelTools::LoadModelsFromFile( "models/bunny.obj", mModels, mMaterials, 5.0f );
     ModelTools::LoadModelsFromFile( "models/cube.obj", mModels, mMaterials, 0.5f );
 
+    mCamera = Camera();
+    mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
+    mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
+    mGLViewport->setCamera( std::make_shared<Camera>( mCamera ) );
+
     float timeCurrentFrame;
     float deltaTime;
     auto timeLastFrame = (float) glfwGetTime();
@@ -241,11 +246,7 @@ public:
         model.Transform = glm::rotate( model.Transform, angle, glm::vec3( 0, 1, 0 ) );
       }
 
-      Camera mCamera;
-      mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
-      mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
 
-      mGLViewport->setCamera( std::make_shared<Camera>( mCamera ) );
       mGLViewport->draw( mModels, mPointLights, mPhongShader );
 
       // Draw imgui on default frame buffer
@@ -319,6 +320,7 @@ private:
 
   std::shared_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
   std::unique_ptr<GLViewport> mGLViewport;   // Only one GLViewport supported as of now
+  Camera mCamera;
 
   // optix vars
   std::vector<uint32_t> pixels;

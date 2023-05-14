@@ -25,7 +25,7 @@ public:
     mCamera = camera;
 
     // Initializing frame buffer and renderTexture
-    mFramebuffer = std::make_unique<FrameBuffer>(width, height);
+    mFramebuffer = std::make_unique<FrameBuffer>( width, height );
     assert( mFramebuffer->complete() );
   }
 
@@ -35,12 +35,15 @@ public:
 
   void resize( int width, int height ) {
     mFramebuffer.release();
-    mFramebuffer = std::make_unique<FrameBuffer>(width, height);
+    mFramebuffer = std::make_unique<FrameBuffer>( width, height );
 
     mWidth  = width;
     mHeight = height;
 
     // RESIZE CAMERA???
+    if ( mCamera != nullptr ) {
+      mCamera->resize( mWidth, mHeight );
+    }
   }
 
   int getWidth() {
