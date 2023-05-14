@@ -10,13 +10,13 @@
 enum TextureType { Ambient = 0, Diffuse, Specular };
 
 struct Texture {
-  const char* Name = "Texture";
+  const char* Name = "My Texture";
   TextureType Type = TextureType::Diffuse;
   int Width {};
   int Height {};
   int Channels {};
   unsigned int GLID {};
-  unsigned char* _data = nullptr;
+  unsigned char* _data = NULL;  // data NULL by default
 };
 
 namespace TextureTools {

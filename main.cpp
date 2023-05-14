@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <memory>
 #include <optional>
 
 #include "cuBuffer.h"
@@ -17,22 +18,17 @@
 #include "Texture.h"
 #include "Light.h"
 #include "Types.h"
+#include "FrameBuffer.h"
 
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
-
-// assimp include files. These three are usually needed.
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
-#include <fstream>
 
 // Importing imgui
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "Scene.h"
+#include "optix/Scene.h"
 
 class Application {
 public:
@@ -47,7 +43,7 @@ public:
 
   ~Application() {
     // TODO: Delete all the models before shaders
-    delete mPhongShader;
+    mPhongShader.release();
 
     // Imgui cleanup
     {
@@ -140,7 +136,7 @@ public:
     // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
-    mPhongShader = new PhongShader();
+    mPhongShader = std::unique_ptr<PhongShader>( new PhongShader() );
 
     // ================================================================================
 
@@ -160,28 +156,13 @@ public:
     }
 
     // Initializing frame buffer and renderTexture
-    {
-      glGenFramebuffers( 1, &mFramebuffer );
-      glBindFramebuffer( GL_FRAMEBUFFER, mFramebuffer );
+    mFramebuffer = std::unique_ptr<FrameBuffer>( new FrameBuffer() );
 
-      // Initialize render texture
-      mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
-      TextureTools::GenTextureOnDevice(mRenderTexture);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-
-      glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mRenderTexture.GLID, 0 );
-
-      // DEPTH
-      unsigned int rbo;
-      glGenRenderbuffers(1, &rbo);
-      glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-      glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-      assert (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-    }
+    // Initialize render texture
+    mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
+    TextureTools::GenTextureOnDevice( mRenderTexture );
+    mFramebuffer->addRenderTexture( mRenderTexture );
+    assert( mFramebuffer->complete() );
 
     return 0;
   }
@@ -193,80 +174,6 @@ public:
   static void processInputs( GLFWwindow* window ) {
     if ( glfwGetKey( window, GLFW_KEY_ESCAPE ) == GLFW_PRESS ) {
       glfwSetWindowShouldClose( window, true );
-    }
-  }
-
-  void LoadModelsFromFile( const std::string& filename, float scale = 1.0f ) {
-    // the global Assimp scene object
-    const aiScene* g_scene = nullptr;
-
-    // Create an instance of the Importer class
-    Assimp::Importer importer;
-
-    // Check if file exists
-    std::ifstream fin( filename.c_str() );
-    if ( fin.fail() ) {
-      std::string message = "Couldn't open file: " + filename;
-      std::wstring targetMessage;
-      // utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
-      std::cout << importer.GetErrorString() << std::endl;
-      return;
-    }
-
-    fin.close();
-
-    g_scene = importer.ReadFile( filename, aiProcessPreset_TargetRealtime_Quality );
-
-    // If the import failed, report it
-    if ( g_scene == nullptr ) {
-      std::cout << importer.GetErrorString() << std::endl;
-      return;
-    }
-
-    // Now we can access the file's contents.
-    std::cout << "Import of scene " << filename << " succeeded." << std::endl;
-
-    for ( unsigned int i = 0; i < g_scene->mNumMeshes; i++ ) {
-      VertexList vertexList;
-      UIntList indexList;
-
-      const aiMesh* mesh = g_scene->mMeshes[i];
-
-      // Filling in the vertex data
-      for ( unsigned int v = 0; v < mesh->mNumVertices; v++ ) {
-        Vertex newVertex;
-
-        aiVector3D aiVertex = mesh->mVertices[v];
-        newVertex.Position  = glm::vec3( aiVertex.x, aiVertex.y, aiVertex.z );
-
-        aiVector3D aiNormal = mesh->mNormals[v];
-        newVertex.Normal    = glm::vec3( aiNormal.x, aiNormal.y, aiNormal.z );
-
-        aiVector3t<float> aiTexCoord;
-        if ( mesh->mTextureCoords[0] != nullptr ) {
-          aiTexCoord         = mesh->mTextureCoords[0][v];
-          newVertex.TexCoord = glm::vec2( aiTexCoord.x, aiTexCoord.y );
-        } else {
-          newVertex.TexCoord = glm::vec2( 0.0f );
-        }
-
-        vertexList.push_back( newVertex );
-      }
-
-      // Filling in the indices data
-      for ( unsigned int vf = 0; vf < mesh->mNumFaces; vf++ ) {
-        aiFace face = mesh->mFaces[vf];
-        for ( unsigned int vi = 0; vi < face.mNumIndices; vi++ ) {
-          unsigned int aiIndex = face.mIndices[vi];
-          indexList.push_back( aiIndex );
-        }
-      }
-
-      // TODO: Consider deleting host side model data in case of memory shortage
-      Model newModel = { vertexList, indexList, glm::mat4( 1.0 ), mMaterials[0] };
-      ModelTools::LoadOnDevice( newModel ); // load on device
-      newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
-      mModels.push_back( newModel );
     }
   }
 
@@ -293,8 +200,8 @@ public:
     mPointLights.push_back( pointLight );
 
     // Push some default textures and materials before calling this!
-    LoadModelsFromFile( "models/bunny.obj", 5.0f );
-    LoadModelsFromFile( "models/cube.obj", 0.5f );
+    ModelTools::LoadModelsFromFile( "models/bunny.obj", mModels, mMaterials, 5.0f );
+    ModelTools::LoadModelsFromFile( "models/cube.obj", mModels, mMaterials, 0.5f );
 
     float timeCurrentFrame;
     float deltaTime;
@@ -303,12 +210,12 @@ public:
       int width, height;
       glfwGetWindowSize( mWindow, &width, &height );
 
-      // Get pixels from optix
-      int2 fbSize = make_int2( width, height );
-      scene.resize( fbSize );
-      pixels.resize( fbSize.x * fbSize.y );
-      scene.render();
-      scene.download_pixels( pixels.data() );
+      //      // Get pixels from optix
+      //      int2 fbSize = make_int2( width, height );
+      //      scene.resize( fbSize );
+      //      pixels.resize( fbSize.x * fbSize.y );
+      //      scene.render();
+      //      scene.download_pixels( pixels.data() );
 
       // Update optixRenderTexture from pixel data
       optixRenderTexture._data = (unsigned char*) pixels.data();
@@ -350,7 +257,7 @@ public:
 
       // Bind render frame buffer before drawing scene
       // Render to our framebuffer
-      glBindFramebuffer( GL_FRAMEBUFFER, mFramebuffer );
+      mFramebuffer->bind();
       glViewport(
           0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the upp
 
@@ -378,12 +285,10 @@ public:
 
       // Draw imgui on default frame buffer
       glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-      glViewport(
-          0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the
+      glViewport( 0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the
 
       // Clear background
       glClearColor( 1.0f, 0.1f, 0.1f, 1.0f );
-      glEnable(GL_DEPTH_TEST);
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
       // Imgui frame init
@@ -398,13 +303,13 @@ public:
 
         // Render view
         ImGui::Begin( "Viewport" );
-        ImGui::Image( (void*) (intptr_t) mRenderTexture.GLID, ImVec2( 800, 600 ), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image( (void*) (intptr_t) mRenderTexture.GLID, ImVec2( 800, 600 ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
         ImGui::End();
-
-        // Optix render view
-        ImGui::Begin( "Optix" );
-        ImGui::Image( (void*) (intptr_t) optixRenderTexture.GLID, ImVec2( 800, 600 ) );
-        ImGui::End();
+        //
+        //        // Optix render view
+        //        ImGui::Begin( "Optix" );
+        //        ImGui::Image( (void*) (intptr_t) optixRenderTexture.GLID, ImVec2( 800, 600 ) );
+        //        ImGui::End();
       }
 
       // Drawing imgui
@@ -422,8 +327,6 @@ public:
       glfwPollEvents();
 
       timeLastFrame = timeCurrentFrame;
-
-      //      return;
     }
   }
 
@@ -433,12 +336,13 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // Application vars
-  PhongShader* mPhongShader = nullptr; // Only one shader supported as of now
+  std::unique_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
   std::vector<Texture> mTextures;
   std::vector<Material> mMaterials;
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
-  unsigned int mFramebuffer;
+
+  std::unique_ptr<FrameBuffer> mFramebuffer;
   Texture mRenderTexture;
 
   // optix vars

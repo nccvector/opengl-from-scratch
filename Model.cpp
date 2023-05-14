@@ -5,6 +5,12 @@
 
 #include "Model.h"
 
+// assimp include files. These three are usually needed.
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <fstream>
+
 namespace ModelTools {
 
 void LoadOnDevice( Model& model ) {
@@ -56,4 +62,79 @@ void LoadOnDevice( Model& model ) {
   // Unbind after creation
   glBindVertexArray( 0 );
 }
+
+void LoadModelsFromFile( const std::string& filename, std::vector<Model>& models, std::vector<Material>& materials, float scale ) {
+  // the global Assimp scene object
+  const aiScene* g_scene = nullptr;
+
+  // Create an instance of the Importer class
+  Assimp::Importer importer;
+
+  // Check if file exists
+  std::ifstream fin( filename.c_str() );
+  if ( fin.fail() ) {
+    std::string message = "Couldn't open file: " + filename;
+    std::wstring targetMessage;
+    // utf8::utf8to16(message.c_str(), message.c_str() + message.size(), targetMessage);
+    std::cout << importer.GetErrorString() << std::endl;
+    return;
+  }
+
+  fin.close();
+
+  g_scene = importer.ReadFile( filename, aiProcessPreset_TargetRealtime_Quality );
+
+  // If the import failed, report it
+  if ( g_scene == nullptr ) {
+    std::cout << importer.GetErrorString() << std::endl;
+    return;
+  }
+
+  // Now we can access the file's contents.
+  std::cout << "Import of scene " << filename << " succeeded." << std::endl;
+
+  for ( unsigned int i = 0; i < g_scene->mNumMeshes; i++ ) {
+    VertexList vertexList;
+    UIntList indexList;
+
+    const aiMesh* mesh = g_scene->mMeshes[i];
+
+    // Filling in the vertex data
+    for ( unsigned int v = 0; v < mesh->mNumVertices; v++ ) {
+      Vertex newVertex;
+
+      aiVector3D aiVertex = mesh->mVertices[v];
+      newVertex.Position  = glm::vec3( aiVertex.x, aiVertex.y, aiVertex.z );
+
+      aiVector3D aiNormal = mesh->mNormals[v];
+      newVertex.Normal    = glm::vec3( aiNormal.x, aiNormal.y, aiNormal.z );
+
+      aiVector3t<float> aiTexCoord;
+      if ( mesh->mTextureCoords[0] != nullptr ) {
+        aiTexCoord         = mesh->mTextureCoords[0][v];
+        newVertex.TexCoord = glm::vec2( aiTexCoord.x, aiTexCoord.y );
+      } else {
+        newVertex.TexCoord = glm::vec2( 0.0f );
+      }
+
+      vertexList.push_back( newVertex );
+    }
+
+    // Filling in the indices data
+    for ( unsigned int vf = 0; vf < mesh->mNumFaces; vf++ ) {
+      aiFace face = mesh->mFaces[vf];
+      for ( unsigned int vi = 0; vi < face.mNumIndices; vi++ ) {
+        unsigned int aiIndex = face.mIndices[vi];
+        indexList.push_back( aiIndex );
+      }
+    }
+
+    // TODO: Consider deleting host side model data in case of memory shortage
+    Model newModel = { vertexList, indexList, glm::mat4( 1.0 ), materials[0] };
+    ModelTools::LoadOnDevice( newModel ); // load on device
+    newModel.Transform = glm::scale( newModel.Transform, glm::vec3( scale ) );
+    models.push_back( newModel );
+  }
+}
+
 } // namespace ModelTools

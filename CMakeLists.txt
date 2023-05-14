@@ -18,7 +18,6 @@ add_subdirectory(ext/glm)
 find_package(assimp PATHS ext/assimp REQUIRED)
 
 # Setup imgui
-include_directories(ext/imgui)
 set(IMGUI_SRCS
         ext/imgui/imgui.cpp
         ext/imgui/imgui_widgets.cpp
@@ -28,10 +27,15 @@ set(IMGUI_SRCS
         ext/imgui/imgui_demo.cpp
         ext/imgui/imgui_draw.cpp)
 
+# Setup optix
+set(MY_OPTIX_SRCS
+        optix/Scene.cpp)
+
 set(INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/ext/glm/
         ${CMAKE_CURRENT_SOURCE_DIR}/ext/glad/include
-        ${ASSIMP_INCLUDE_DIRS})
+        ${ASSIMP_INCLUDE_DIRS}
+        ext/imgui)
 
 message("INCLUDE_DIRS: " ${INCLUDE_DIRS})
 
@@ -41,27 +45,19 @@ include_directories(${INCLUDE_DIRS})
 # Target ofs
 add_executable(ofs
         ${embedded_ptx_code}
+        ${MY_OPTIX_SRCS}
         ${IMGUI_SRCS}
         main.cpp
         ext/glad/src/glad.c
         Shader.cpp
-        Shader.h
         Texture.cpp
-        Texture.h
         Model.cpp
-        Model.h
-        Types.h
         Types.cpp
         Vertex.cpp
-        Vertex.h
         Material.cpp
-        Material.h
-        Light.h
-        PhongShader.h
         PhongShader.cpp
-        optix/Scene.cpp
-        optix/Scene.h
-        optix/LaunchParams.h)
+        FrameBuffer.cpp)
+
 target_link_libraries(ofs
         ${OptiX_LIBS}
         ${OPENGL_LIBRARIES}

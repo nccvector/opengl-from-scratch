@@ -27,6 +27,8 @@ struct Model {
 
 namespace ModelTools {
 void LoadOnDevice( Model& model );
-}
+void LoadModelsFromFile(
+    const std::string& filename, std::vector<Model>& models, std::vector<Material>& materials, float scale = 1.0f );
+} // namespace ModelTools
 
 #endif // OPENGL_FROM_SCRATCH_MODEL_H
