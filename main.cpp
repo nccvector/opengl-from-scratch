@@ -19,6 +19,7 @@
 #include "Light.h"
 #include "Types.h"
 #include "FrameBuffer.h"
+#include "Camera.h"
 
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
@@ -136,7 +137,7 @@ public:
     // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
-    mPhongShader = std::make_unique<PhongShader>( );
+    mPhongShader = std::make_unique<PhongShader>();
 
     // ================================================================================
 
@@ -156,7 +157,7 @@ public:
     }
 
     // Initializing frame buffer and renderTexture
-    mFramebuffer = std::make_unique<FrameBuffer>( );
+    mFramebuffer = std::make_unique<FrameBuffer>();
 
     // Initialize render texture
     mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
@@ -216,11 +217,11 @@ public:
       //      pixels.resize( fbSize.x * fbSize.y );
       //      scene.render();
       //      scene.download_pixels( pixels.data() );
-
-      // Update optixRenderTexture from pixel data
-      optixRenderTexture._data = (unsigned char*) pixels.data();
-      TextureTools::UpdateTextureData( optixRenderTexture );
-      std::cout << "Optix Render Texture ID: " << optixRenderTexture.GLID << std::endl;
+      //
+      //      // Update optixRenderTexture from pixel data
+      //      optixRenderTexture._data = (unsigned char*) pixels.data();
+      //      TextureTools::UpdateTextureData( optixRenderTexture );
+      //      std::cout << "Optix Render Texture ID: " << optixRenderTexture.GLID << std::endl;
 
       timeCurrentFrame = (float) glfwGetTime();
       deltaTime        = timeCurrentFrame - timeLastFrame;
@@ -244,16 +245,9 @@ public:
         model.Transform = glm::rotate( model.Transform, angle, glm::vec3( 0, 1, 0 ) );
       }
 
-      // Update View TODO: view can also be a model
-      glm::mat4 camera = glm::mat4( 1.0f );
-      glm::vec3 cameraPosition( 3.0f, 3.0f, 3.0f );
-      glm::vec3 lookAt( 0, 0, 0 );
-      glm::vec3 upVector( 0, 1, 0 );
-
-      // Provide the positions wherever you want to look in the scene, but inverse the transform because camera looks
-      // in the opposite z Not taking inverse, because we already use camera inverse matrix in the shader to transform
-      // all the points in camera frame. So taking inverse twice is very inefficient...skipping inverse transform.
-      camera = glm::lookAt( cameraPosition, lookAt, upVector );
+      Camera mCamera;
+      mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
+      mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
 
       // Bind render frame buffer before drawing scene
       // Render to our framebuffer
@@ -265,12 +259,8 @@ public:
       glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-      // Applying render transforms
-      glm::mat4 projection =
-          glm::perspective( glm::radians( 45.0f ), (float) width / (float) height, 0.0001f, 100000.0f );
-
       // Send view projection transforms to shader
-      mPhongShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), camera, projection );
+      mPhongShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), mCamera.getTransform(), mCamera.getProjection());
 
       // Enable shader
       mPhongShader->use();
