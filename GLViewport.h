@@ -42,7 +42,26 @@ public:
     mWidth  = width;
     mHeight = height;
 
+    // Recreate render texture
+    glDeleteTextures( 1, &( mRenderTexture.GLID ) );    // Delete old one
+    mRenderTexture.Width  = mWidth;                     // Resize width
+    mRenderTexture.Height = mHeight;                    // Resize Height
+    TextureTools::GenTextureOnDevice( mRenderTexture ); // Create new one
+
+    // Recreate frame buffer
+    glDeleteFramebuffers(1, &(mFramebuffer->getID()));  // Delete the old one
+    mFramebuffer = std::make_unique<FrameBuffer>();
+    mFramebuffer->addRenderTexture(mRenderTexture);
+
     // RESIZE CAMERA???
+  }
+
+  int getWidth() {
+    return mWidth;
+  }
+
+  int getHeight() {
+    return mHeight;
   }
 
   void draw(
@@ -56,8 +75,7 @@ public:
     // Bind render frame buffer before drawing scene
     // Render to our framebuffer
     mFramebuffer->bind();
-    glViewport( 0, 0, mCamera->getWidth(),
-        mCamera->getHeight() ); // Render on the whole framebuffer, complete from the lower left corner to the upp
+    glViewport( 0, 0, mWidth, mHeight );
 
     // Clear background
     glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );

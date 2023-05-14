@@ -158,6 +158,7 @@ public:
 
     // Initialize GLViewport here...
     mGLViewport = std::make_unique<GLViewport>(width, height, nullptr);
+    mGLViewport->resize(100, 100);
 
     return 0;
   }
@@ -266,7 +267,7 @@ public:
 
         // Render view
         ImGui::Begin( "Viewport" );
-        ImGui::Image( (void*) (intptr_t) mGLViewport->getRenderTextureID(), ImVec2( 800, 600 ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
+        ImGui::Image( (void*) (intptr_t) mGLViewport->getRenderTextureID(), ImVec2( mGLViewport->getWidth(), mGLViewport->getHeight()), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
         ImGui::End();
         //
         //        // Optix render view
@@ -299,13 +300,13 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // Application vars
-  std::shared_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
   std::vector<Texture> mTextures;
   std::vector<Material> mMaterials;
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
 
-  std::unique_ptr<GLViewport> mGLViewport;
+  std::shared_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
+  std::unique_ptr<GLViewport> mGLViewport;  // Only one GLViewport supported as of now
 
   // optix vars
   std::vector<uint32_t> pixels;

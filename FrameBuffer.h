@@ -14,6 +14,9 @@ public:
   void bind();
   void unbind();
   bool complete();
+  unsigned int& getID(){
+    return mGLID;
+  }
 
 private:
   unsigned int mGLID;
