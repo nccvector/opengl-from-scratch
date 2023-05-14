@@ -55,7 +55,7 @@ public:
   }
 
   void draw(
-      const std::vector<Model>& models, const std::vector<PointLight> pointlights, std::shared_ptr<Shader> shader ) {
+      const std::vector<Model>& models, const std::vector<PointLight>& pointlights, std::shared_ptr<Shader> shader ) {
 
     if ( mCamera == nullptr ) {
       std::cerr << "Camera is NULL" << std::endl;
