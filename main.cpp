@@ -199,10 +199,11 @@ public:
     // Push some default textures and materials before calling this!
     ModelTools::LoadModelsFromFile( "models/bunny.obj", mModels, mMaterials, 5.0f );
     ModelTools::LoadModelsFromFile( "models/cube.obj", mModels, mMaterials, 0.5f );
+    ModelTools::LoadModelsFromFile( "models/sponza/sponza.obj", mModels, mMaterials, 0.01f );
 
-    mCamera = Camera();
-    mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
-    mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
+    mCamera = Camera(65.0f);
+    mCamera.setPosition( glm::vec3( 1.4, 1, 1.4 ) );
+    mCamera.lookAt( glm::vec3( 0, 0.75, 0 ) );
     mGLViewport->setCamera( std::make_shared<Camera>( mCamera ) );
 
     float timeCurrentFrame;
@@ -239,7 +240,7 @@ public:
 
 
       // Update Models
-      float angle = timeCurrentFrame / 1000.0f;
+      float angle = 0.3f * deltaTime;
 
       for ( int i = 0; i < mModels.size(); i++ ) {
         Model& model    = mModels[i];
