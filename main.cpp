@@ -157,8 +157,8 @@ public:
     }
 
     // Initialize GLViewport here...
-    mGLViewport = std::make_unique<GLViewport>(width, height, nullptr);
-    mGLViewport->resize(100, 100);
+    mGLViewport = std::make_unique<GLViewport>( width, height, nullptr );
+    mGLViewport->resize( 1000, 1000 );
 
     return 0;
   }
@@ -174,6 +174,7 @@ public:
   }
 
   void run() {
+
     // Load textures
     Texture newTexture;
     TextureTools::LoadOnHost( "textures/UVMap.png", newTexture );
@@ -244,8 +245,8 @@ public:
       mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
       mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
 
-      mGLViewport->setCamera(std::make_shared<Camera>(mCamera));
-      mGLViewport->draw(mModels, mPointLights, mPhongShader);
+      mGLViewport->setCamera( std::make_shared<Camera>( mCamera ) );
+      mGLViewport->draw( mModels, mPointLights, mPhongShader );
 
       // Draw imgui on default frame buffer
       glBindFramebuffer( GL_FRAMEBUFFER, 0 );
@@ -265,10 +266,21 @@ public:
         bool showDemoWindow = true;
         ImGui::ShowDemoWindow( &showDemoWindow );
 
-        // Render view
-        ImGui::Begin( "Viewport" );
-        ImGui::Image( (void*) (intptr_t) mGLViewport->getRenderTextureID(), ImVec2( mGLViewport->getWidth(), mGLViewport->getHeight()), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
-        ImGui::End();
+        {
+          // Render view
+          ImGui::Begin( "Viewport" );
+          ImVec2 size = ImGui::GetContentRegionAvail();
+
+          // Resize if...
+          if ( size.x != mGLViewport->getWidth() || size.y != mGLViewport->getHeight() ) {
+            mGLViewport->resize( size.x, size.y );
+          }
+
+          ImGui::Image( (void*) (intptr_t) mGLViewport->getRenderTextureID(),
+              ImVec2( mGLViewport->getWidth(), mGLViewport->getHeight() ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
+          ImGui::End();
+        }
+
         //
         //        // Optix render view
         //        ImGui::Begin( "Optix" );
@@ -306,7 +318,7 @@ private:
   std::vector<PointLight> mPointLights;
 
   std::shared_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
-  std::unique_ptr<GLViewport> mGLViewport;  // Only one GLViewport supported as of now
+  std::unique_ptr<GLViewport> mGLViewport;   // Only one GLViewport supported as of now
 
   // optix vars
   std::vector<uint32_t> pixels;

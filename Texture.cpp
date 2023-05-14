@@ -40,6 +40,9 @@ void GenTextureOnDevice( Texture& texture ) {
 
   // Initialize texture on device (even with NULL data if possible)
   UpdateTextureData(texture);
+
+  // unbind before leaving
+  glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 void UpdateTextureData( Texture& texture ) {
@@ -50,11 +53,18 @@ void UpdateTextureData( Texture& texture ) {
   // Copy the data to texture
   glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, texture.Width, texture.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture._data );
   glGenerateMipmap( GL_TEXTURE_2D );
+
+  // unbind before leaving
+  glBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 void LoadOnDevice( Texture& texture ) {
   GenTextureOnDevice( texture );
   UpdateTextureData( texture );
+
+  // bind
+  glActiveTexture( GL_TEXTURE0 );
+  glBindTexture( GL_TEXTURE_2D, texture.GLID );
 
   // Copying texture from host to device
   if ( texture._data ) {
@@ -64,5 +74,8 @@ void LoadOnDevice( Texture& texture ) {
   } else {
     std::cerr << "Could not bind texture!" << std::endl;
   }
+
+  // unbind
+  glBindTexture( GL_TEXTURE_2D, texture.GLID );
 }
 } // namespace TextureTools

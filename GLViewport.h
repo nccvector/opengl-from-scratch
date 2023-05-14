@@ -25,12 +25,7 @@ public:
     mCamera = camera;
 
     // Initializing frame buffer and renderTexture
-    mFramebuffer = std::make_unique<FrameBuffer>();
-
-    // Initialize render texture
-    mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
-    TextureTools::GenTextureOnDevice( mRenderTexture );
-    mFramebuffer->addRenderTexture( mRenderTexture );
+    mFramebuffer = std::make_unique<FrameBuffer>(width, height);
     assert( mFramebuffer->complete() );
   }
 
@@ -39,19 +34,11 @@ public:
   }
 
   void resize( int width, int height ) {
+    mFramebuffer.release();
+    mFramebuffer = std::make_unique<FrameBuffer>(width, height);
+
     mWidth  = width;
     mHeight = height;
-
-    // Recreate render texture
-    glDeleteTextures( 1, &( mRenderTexture.GLID ) );    // Delete old one
-    mRenderTexture.Width  = mWidth;                     // Resize width
-    mRenderTexture.Height = mHeight;                    // Resize Height
-    TextureTools::GenTextureOnDevice( mRenderTexture ); // Create new one
-
-    // Recreate frame buffer
-    glDeleteFramebuffers(1, &(mFramebuffer->getID()));  // Delete the old one
-    mFramebuffer = std::make_unique<FrameBuffer>();
-    mFramebuffer->addRenderTexture(mRenderTexture);
 
     // RESIZE CAMERA???
   }
@@ -97,15 +84,13 @@ public:
   }
 
   unsigned int getRenderTextureID() {
-    return mRenderTexture.GLID;
+    return mFramebuffer->getRenderTextureID();
   }
 
 private:
   int mWidth;
   int mHeight;
   std::unique_ptr<FrameBuffer> mFramebuffer;
-  Texture mRenderTexture;
-
   std::shared_ptr<Camera> mCamera;
 };
 
