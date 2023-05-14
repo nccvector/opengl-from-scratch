@@ -29,7 +29,7 @@ set(IMGUI_SRCS
 
 # Setup optix
 set(MY_OPTIX_SRCS
-        optix/Scene.cpp Camera.cpp Camera.h)
+        optix/Scene.cpp Camera.cpp Camera.h GLViewport.cpp GLViewport.h)
 
 set(INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/ext/glm/

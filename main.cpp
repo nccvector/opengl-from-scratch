@@ -20,6 +20,7 @@
 #include "Types.h"
 #include "FrameBuffer.h"
 #include "Camera.h"
+#include "GLViewport.h"
 
 // GLM
 #include <glm/gtc/matrix_transform.hpp>
@@ -44,7 +45,6 @@ public:
 
   ~Application() {
     // TODO: Delete all the models before shaders
-    mPhongShader.release();
 
     // Imgui cleanup
     {
@@ -137,7 +137,7 @@ public:
     // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
-    mPhongShader = std::make_unique<PhongShader>();
+    mPhongShader = std::make_shared<PhongShader>();
 
     // ================================================================================
 
@@ -156,14 +156,8 @@ public:
       glEnable( GL_DEPTH_TEST );
     }
 
-    // Initializing frame buffer and renderTexture
-    mFramebuffer = std::make_unique<FrameBuffer>();
-
-    // Initialize render texture
-    mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
-    TextureTools::GenTextureOnDevice( mRenderTexture );
-    mFramebuffer->addRenderTexture( mRenderTexture );
-    assert( mFramebuffer->complete() );
+    // Initialize GLViewport here...
+    mGLViewport = new GLViewport(width, height);
 
     return 0;
   }
@@ -249,29 +243,8 @@ public:
       mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
       mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
 
-      // Bind render frame buffer before drawing scene
-      // Render to our framebuffer
-      mFramebuffer->bind();
-      glViewport(
-          0, 0, width, height ); // Render on the whole framebuffer, complete from the lower left corner to the upp
-
-      // Clear background
-      glClearColor( 0.1f, 0.1f, 0.1f, 1.0f );
-      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-      // Send view projection transforms to shader
-      mPhongShader->setModelViewProjectionMatrix( glm::mat4( 1.0 ), mCamera.getTransform(), mCamera.getProjection());
-
-      // Enable shader
-      mPhongShader->use();
-
-      // Send light data to shader
-      mPhongShader->setPointLights( mPointLights );
-
-      // Draw models
-      for ( auto model : mModels ) {
-        mPhongShader->draw( model );
-      }
+      mGLViewport->setCamera(&mCamera);
+      mGLViewport->draw(mModels, mMaterials, mPointLights, mPhongShader);
 
       // Draw imgui on default frame buffer
       glBindFramebuffer( GL_FRAMEBUFFER, 0 );
@@ -293,7 +266,7 @@ public:
 
         // Render view
         ImGui::Begin( "Viewport" );
-        ImGui::Image( (void*) (intptr_t) mRenderTexture.GLID, ImVec2( 800, 600 ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
+        ImGui::Image( (void*) (intptr_t) mGLViewport->getRenderTextureID(), ImVec2( 800, 600 ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
         ImGui::End();
         //
         //        // Optix render view
@@ -326,14 +299,13 @@ private:
   GLFWwindow* mWindow = nullptr;
 
   // Application vars
-  std::unique_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
+  std::shared_ptr<PhongShader> mPhongShader; // Only one shader supported as of now
   std::vector<Texture> mTextures;
   std::vector<Material> mMaterials;
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
 
-  std::unique_ptr<FrameBuffer> mFramebuffer;
-  Texture mRenderTexture;
+  GLViewport* mGLViewport;
 
   // optix vars
   std::vector<uint32_t> pixels;
