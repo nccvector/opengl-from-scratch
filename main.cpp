@@ -157,7 +157,7 @@ public:
     }
 
     // Initialize GLViewport here...
-    mGLViewport = std::make_unique<GLViewport>(width, height);
+    mGLViewport = std::make_unique<GLViewport>(width, height, nullptr);
 
     return 0;
   }
@@ -243,8 +243,8 @@ public:
       mCamera.setPosition( glm::vec3( 3, 3, 3 ) );
       mCamera.lookAt( glm::vec3( 0, 0, 0 ) );
 
-      mGLViewport->setCamera(&mCamera);
-      mGLViewport->draw(mModels, mMaterials, mPointLights, mPhongShader);
+      mGLViewport->setCamera(std::make_shared<Camera>(mCamera));
+      mGLViewport->draw(mModels, mPointLights, mPhongShader);
 
       // Draw imgui on default frame buffer
       glBindFramebuffer( GL_FRAMEBUFFER, 0 );

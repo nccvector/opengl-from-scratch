@@ -19,10 +19,10 @@
 
 class GLViewport {
 public:
-  GLViewport( int width, int height ) {
+  GLViewport( int width, int height, const std::shared_ptr<Camera>& camera ) {
     mWidth  = width;
     mHeight = height;
-    mCamera = nullptr;
+    mCamera = camera;
 
     // Initializing frame buffer and renderTexture
     mFramebuffer = std::make_unique<FrameBuffer>();
@@ -34,10 +34,9 @@ public:
     assert( mFramebuffer->complete() );
   }
 
-  void setCamera( Camera* camera ) {
+  void setCamera( const std::shared_ptr<Camera>& camera ) {
     mCamera = camera;
   }
-
 
   void resize( int width, int height ) {
     mWidth  = width;
@@ -46,11 +45,10 @@ public:
     // RESIZE CAMERA???
   }
 
-  void draw( const std::vector<Model>& models, const std::vector<Material>& materials,
-      const std::vector<PointLight> pointlights, std::shared_ptr<Shader> shader ) {
+  void draw(
+      const std::vector<Model>& models, const std::vector<PointLight> pointlights, std::shared_ptr<Shader> shader ) {
 
-    if (mCamera == nullptr)
-    {
+    if ( mCamera == nullptr ) {
       std::cerr << "Camera is NULL" << std::endl;
       return;
     }
@@ -80,8 +78,7 @@ public:
     }
   }
 
-  unsigned int getRenderTextureID()
-  {
+  unsigned int getRenderTextureID() {
     return mRenderTexture.GLID;
   }
 
@@ -91,7 +88,7 @@ private:
   std::unique_ptr<FrameBuffer> mFramebuffer;
   Texture mRenderTexture;
 
-  Camera* mCamera;
+  std::shared_ptr<Camera> mCamera;
 };
 
 
