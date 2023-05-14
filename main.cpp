@@ -136,7 +136,7 @@ public:
     // Loading, Compiling and creating shaders (Keep the shaders application level)
     // ================================================================================
 
-    mPhongShader = std::unique_ptr<PhongShader>( new PhongShader() );
+    mPhongShader = std::make_unique<PhongShader>( );
 
     // ================================================================================
 
@@ -156,7 +156,7 @@ public:
     }
 
     // Initializing frame buffer and renderTexture
-    mFramebuffer = std::unique_ptr<FrameBuffer>( new FrameBuffer() );
+    mFramebuffer = std::make_unique<FrameBuffer>( );
 
     // Initialize render texture
     mRenderTexture = { "Application Render", TextureType::Ambient, width, height, 4 };
