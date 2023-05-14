@@ -157,7 +157,7 @@ public:
     }
 
     // Initialize GLViewport here...
-    mGLViewport = new GLViewport(width, height);
+    mGLViewport = std::make_unique<GLViewport>(width, height);
 
     return 0;
   }
@@ -305,7 +305,7 @@ private:
   std::vector<Model> mModels;
   std::vector<PointLight> mPointLights;
 
-  GLViewport* mGLViewport;
+  std::unique_ptr<GLViewport> mGLViewport;
 
   // optix vars
   std::vector<uint32_t> pixels;
