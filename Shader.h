@@ -32,10 +32,10 @@ public:
   static void use( unsigned int program );
   void use() const;
 
-  void setTextureSampler2D( TextureType textureIndex, unsigned int textureId ) const {
+  void setTextureSampler2D( TextureType textureIndex, unsigned int textureUnit ) const {
     std::string textureUniform = "TextureSampler2DArray[" + std::to_string( textureIndex ) + "]";
 
-    glUniform1i( glGetUniformLocation( mGLProgram, textureUniform.c_str() ), (GLint) textureId );
+    glUniform1i( glGetUniformLocation( mGLProgram, textureUniform.c_str() ), (GLint) textureUnit );
 
     // Mark active
     std::string textureActiveStatusUniform = "TextureActiveStatusArray[" + std::to_string( textureIndex ) + "]";

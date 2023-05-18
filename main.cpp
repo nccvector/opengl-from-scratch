@@ -247,7 +247,6 @@ public:
         model.Transform = glm::rotate( model.Transform, angle, glm::vec3( 0, 1, 0 ) );
       }
 
-
       mGLViewport->draw( mModels, mPointLights, mPhongShader );
 
       // Draw imgui on default frame buffer
