@@ -34,5 +34,11 @@ target_link_libraries(${PROJECT_NAME}
         glfw
 )
 
-file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
-file( COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+configure_file(shaders/shader.frag ${CMAKE_BINARY_DIR}/shaders/shader.frag)
+configure_file(shaders/shader.vert ${CMAKE_BINARY_DIR}/shaders/shader.vert)
+add_custom_target(copy-files ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources
+        ${CMAKE_BINARY_DIR}/resources
+)
+add_dependencies(${PROJECT_NAME} copy-files)
