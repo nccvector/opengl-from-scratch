@@ -11,7 +11,7 @@ void main()
 {
     position = aPos.xyz;
 
-    gl_Position = vec4(aPos.xyz, 1.0);
+    gl_Position = modelViewProjection * vec4(aPos, 1.0f);
 
 //    gl_Position = modelViewProjection * vec4(aPos/10, 1.0f);
 //    uv = aTexCoord;

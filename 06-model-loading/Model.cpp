@@ -25,9 +25,9 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
 
   for ( int i = 0; i < vertexCount; i++ ) {
     model.meshes[0].vertices[i] = {
-      static_cast<float>( pVertices[i][0] ) / 10,
-      static_cast<float>( pVertices[i][1] ) / 10,
-      static_cast<float>( pVertices[i][2] ) / 10
+      static_cast<float>( pVertices[i][0] ),
+      static_cast<float>( pVertices[i][1] ),
+      static_cast<float>( pVertices[i][2] )
     };
 
     std::cout << "Vertex: " << model.meshes[0].vertices[i][0] << ", " << model.meshes[0].vertices[i][1] << ", "

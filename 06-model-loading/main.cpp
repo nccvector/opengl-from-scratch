@@ -43,7 +43,7 @@ int main() {
   FbxScene* lScene;
 
   // Load the scene.
-  bool lResult = utils::LoadScene( "resources/box.fbx", lScene );
+  bool lResult = utils::LoadScene( "resources/stanford-bunny.fbx", lScene );
 
   std::cout << "Lights in scene: " << lScene->GetSrcObjectCount<FbxLight>() << std::endl;
   std::cout << "Objects in scene: " << lScene->GetSrcObjectCount<FbxNode>() << std::endl;
@@ -98,7 +98,8 @@ int main() {
   }
 
   // Create a camera to render the scene
-  Camera camera( 65.0f, 1.3333f, 0.1, 100.0 );
+  Camera camera( 65.0f, 1.3333f, 0.0001, 10000.0 );
+  camera.SetTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 500.0f)));
 
   // render loop
   // -----------
@@ -109,7 +110,7 @@ int main() {
 
     // render
     // ------
-    glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
+    glClearColor( 0.05f, 0.03f, 0.03f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT );
 
     // Create models on device

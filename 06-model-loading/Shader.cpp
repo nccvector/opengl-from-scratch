@@ -4,10 +4,14 @@
 
 
 void Shader::Draw( Camera* camera, Model* model ) {
-  glm::mat4 modelViewProjection = camera->GetModelViewMatrix() * model->transform;
+  glm::mat4 modelViewProjection = camera->GetViewMatrix() * model->transform;
   glUseProgram( program );
-//  glUniformMatrix4fv(
-//      glGetUniformLocation( program, "modelViewProjection" ), 1, GL_FALSE, glm::value_ptr( camera->GetTransform() ) );
+  glUniformMatrix4fv(
+      glGetUniformLocation( program, "modelViewProjection" ),
+      1,
+      GL_FALSE,
+      glm::value_ptr( modelViewProjection )
+  );
 
   // Draw all the model meshes
   glBindVertexArray( model->VAO );

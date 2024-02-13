@@ -20,28 +20,28 @@ public:
     return pProjection;
   }
 
-  inline glm::mat4 GetModelViewMatrix() {
-    return pTransformProjectionCache;
+  inline glm::mat4 GetViewMatrix() {
+    return pViewMatrixCache;
   }
 
   inline void SetTransform( glm::mat4 transform ) {
     pTransform = transform;
-    UpdateTransformProjectionCache();
+    UpdateViewMatrixCache();
   }
 
   inline void SetProjection( glm::mat4 projection ) {
     pProjection = projection;
-    UpdateTransformProjectionCache();
+    UpdateViewMatrixCache();
   }
 
-  inline void UpdateTransformProjectionCache() {
-    pTransformProjectionCache = pProjection * glm::inverse(pTransform);
+  inline void UpdateViewMatrixCache() {
+    pViewMatrixCache = pProjection * glm::inverse(pTransform);
   }
 
 private:
   glm::mat4 pProjection;
   glm::mat4 pTransform;
-  glm::mat4 pTransformProjectionCache;
+  glm::mat4 pViewMatrixCache;
 };
 
 
