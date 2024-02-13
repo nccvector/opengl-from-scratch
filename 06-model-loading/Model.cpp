@@ -5,82 +5,66 @@
 #include <iostream>
 #include "Model.h"
 
-void Model::LoadOnDevice() {
-  FbxMesh* mesh        = GetMesh();
-  FbxVector4 *pVertices = mesh->GetControlPoints();
-  int *indices = mesh->GetPolygonVertices();
-  int vertexCount      = mesh->GetControlPointsCount();
-  int indexCount       = mesh->GetPolygonVertexCount();
-  const int VERTEX_STRIDE = 4;
+void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
+  FbxMesh* mesh = node->GetMesh();
 
-  // Create vertices and indices
-  float vertices[vertexCount * 4];
+  // Declare memory for mesh
+  model.meshes.resize( 1 );
 
-  for (int i=0; i<vertexCount; i++)
-  {
-    vertices[i * VERTEX_STRIDE] = static_cast<float>(pVertices[i][0]) / 10;
-    vertices[i * VERTEX_STRIDE + 1] = static_cast<float>(pVertices[i][1]) / 10;
-    vertices[i * VERTEX_STRIDE + 2] = static_cast<float>(pVertices[i][2]) / 10;
-    vertices[i * VERTEX_STRIDE + 3] = 1.0f;
+  int vertexCount = mesh->GetControlPointsCount();
+  int indexCount  = mesh->GetPolygonVertexCount();
 
-    std::cout << "Vertex: " <<
-    vertices[i * VERTEX_STRIDE] << ", " <<
-    vertices[i * VERTEX_STRIDE + 1] << ", " <<
-    vertices[i * VERTEX_STRIDE + 2] << ", " <<
-    vertices[i * VERTEX_STRIDE + 3] << "\n";
+  // Copy indices to model
+  int* indices = mesh->GetPolygonVertices();
+  model.meshes[0].indices.resize( indexCount ); // Declare memory
+  memcpy( model.meshes[0].indices.data(), indices, indexCount * sizeof( int ) );
+
+  // Copy vertices to model
+  FbxVector4* pVertices = mesh->GetControlPoints();
+  model.meshes[0].vertices.resize( 3 * vertexCount ); // Declare memory
+
+  for ( int i = 0; i < vertexCount; i++ ) {
+    model.meshes[0].vertices[i] = {
+      static_cast<float>( pVertices[i][0] ) / 10,
+      static_cast<float>( pVertices[i][1] ) / 10,
+      static_cast<float>( pVertices[i][2] ) / 10
+    };
+
+    std::cout << "Vertex: " << model.meshes[0].vertices[i][0] << ", " << model.meshes[0].vertices[i][1] << ", "
+              << model.meshes[0].vertices[i][2] << "\n";
   }
+}
 
-  if ( !mesh ) {
-    return;
-  }
+void ModelTools::LoadOnDevice( Model& model ) {
+  glGenVertexArrays( 1, &( model.VAO ) );
+  glGenBuffers( 1, &( model.VBO ) );
+  glGenBuffers( 1, &( model.EBO ) );
 
-  glGenVertexArrays( 1, &VAO );
-  glGenBuffers( 1, &VBO );
-  glGenBuffers( 1, &EBO );
   // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-  glBindVertexArray( VAO );
+  glBindVertexArray( model.VAO );
 
-  glBindBuffer( GL_ARRAY_BUFFER, VBO );
-  glBufferData( GL_ARRAY_BUFFER, VERTEX_STRIDE * sizeof( float ) * vertexCount, vertices, GL_STATIC_DRAW );
+  glBindBuffer( GL_ARRAY_BUFFER, model.VBO );
+  glBufferData( GL_ARRAY_BUFFER, sizeof( glm::vec3 ) * model.meshes[0].vertices.size(), model.meshes[0].vertices.data(),
+      GL_STATIC_DRAW );
 
-  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, EBO );
-  glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( int ) * indexCount, indices, GL_STATIC_DRAW );
+  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, model.EBO );
+  glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( int ) * model.meshes[0].indices.size(), model.meshes[0].indices.data(),
+      GL_STATIC_DRAW );
 
   glVertexAttribPointer( 0, // shader location index
-      4,                    // number of components per attribute
+      3,                    // number of components per attribute
       GL_FLOAT,
       GL_FALSE,            // normalized (clamp between -1 to 1)
-      4 * sizeof( float ), // stride in bytes to the next same vertex attribute
+      3 * sizeof( float ), // stride in bytes to the next same vertex attribute
       (void*) 0            // byte size offset for the first component
   );
   glEnableVertexAttribArray( 0 );
 
-  //    glVertexAttribPointer( 1, // shader location index
-  //        2,                    // number of components per attribute
-  //        GL_FLOAT,
-  //        GL_FALSE,                       // normalized
-  //        5 * sizeof( float ),            // stride in bytes to the next same vertex attribute
-  //        (void*) ( 3 * sizeof( float ) ) // byte size offset for first component
-  //    );
-  //    glEnableVertexAttribArray( 1 );
-
-  // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound
-  // vertex buffer object so afterwards we can safely unbind
+  // Release buffer
   glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
-  // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO;
-  // keep the EBO bound. glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens.
-  // Modifying other VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs)
-  // when it's not directly necessary.
+  // Release buffer array
   glBindVertexArray( 0 );
-}
 
-unsigned int Model::GetVAO() {
-  return VAO;
-}
-
-int Model::GetElementsCount() {
-  return GetMesh()->GetPolygonVertexCount();
+  model.loadedOnDevice = true;
 }

@@ -15,9 +15,6 @@ add_subdirectory(glfw3)
 # Add glad
 add_library(glad ${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c)
 
-# Add glm
-add_subdirectory(glm)
-
 # Add fbxsdk
 add_subdirectory(fbxsdk)
 
@@ -26,6 +23,7 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/glad/include
         ${OPENGL_INCLUDE_DIR}
         ${FBXSDK_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/glm
 )
 
 # Add cpp and cu files to target. CMake will automatically compile cu with nvcc
@@ -34,6 +32,7 @@ add_executable(${PROJECT_NAME}
         Shader.cpp
         utils.cpp
         Model.cpp
+        Camera.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

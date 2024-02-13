@@ -1,11 +1,17 @@
+#include "glm/gtc/type_ptr.hpp"
 #include "Shader.h"
 #include "utils.h"
 
 
-void Shader::Draw(Model* model) {
+void Shader::Draw( Camera* camera, Model* model ) {
+  glm::mat4 modelViewProjection = camera->GetModelViewMatrix() * model->transform;
   glUseProgram( program );
-  glBindVertexArray(model->GetVAO());
-  glDrawElements(GL_TRIANGLES, model->GetElementsCount(), GL_UNSIGNED_INT, 0);
+//  glUniformMatrix4fv(
+//      glGetUniformLocation( program, "modelViewProjection" ), 1, GL_FALSE, glm::value_ptr( camera->GetTransform() ) );
+
+  // Draw all the model meshes
+  glBindVertexArray( model->VAO );
+  glDrawElements( GL_TRIANGLES, model->meshes[0].indices.size(), GL_UNSIGNED_INT, 0 );
 }
 
 void Shader::loadAndCompile( const char* path, unsigned int shader ) {

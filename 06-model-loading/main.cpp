@@ -11,6 +11,7 @@
 #include "common.h"
 #include "utils.h"
 #include "Shader.h"
+#include "Camera.h"
 
 
 // settings
@@ -79,16 +80,25 @@ int main() {
   // Create, load and compile shaders
   PhongShader phongShader;
 
+  std::vector<Model> models;
+
   // Create models on device
   for ( int oIdx = 0; oIdx < lScene->GetSrcObjectCount<FbxNode>(); oIdx++ ) {
-    Model* model = reinterpret_cast<Model*>( lScene->GetSrcObject<FbxNode>( oIdx ) );
+    FbxNode* node = lScene->GetSrcObject<FbxNode>( oIdx );
 
-    if ( !model->GetMesh() ) {
+    if ( !node->GetMesh() ) {
       continue;
     }
 
-    model->LoadOnDevice();
+    Model newModel;
+    ModelTools::CreateModelFromFbxNode( node, newModel );
+    ModelTools::LoadOnDevice( newModel );
+
+    models.push_back(newModel);
   }
+
+  // Create a camera to render the scene
+  Camera camera( 65.0f, 1.3333f, 0.1, 100.0 );
 
   // render loop
   // -----------
@@ -103,14 +113,8 @@ int main() {
     glClear( GL_COLOR_BUFFER_BIT );
 
     // Create models on device
-    for ( int oIdx = 0; oIdx < lScene->GetSrcObjectCount<FbxNode>(); oIdx++ ) {
-      Model* model = reinterpret_cast<Model*>( lScene->GetSrcObject<FbxNode>( oIdx ) );
-
-      if ( !model->GetMesh() ) {
-        continue;
-      }
-
-      phongShader.Draw(model);
+    for ( auto model : models ) {
+      phongShader.Draw( &camera, &model );
     }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
