@@ -15,6 +15,9 @@ add_subdirectory(glfw3)
 # Add glad
 add_library(glad ${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c)
 
+# Add glm
+add_subdirectory(glm)
+
 # Add fbxsdk
 add_subdirectory(fbxsdk)
 
@@ -30,6 +33,7 @@ add_executable(${PROJECT_NAME}
         main.cpp
         Shader.cpp
         utils.cpp
+        Model.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -41,8 +45,9 @@ target_link_libraries(${PROJECT_NAME}
 
 configure_file(shaders/shader.frag ${CMAKE_BINARY_DIR}/shaders/shader.frag)
 configure_file(shaders/shader.vert ${CMAKE_BINARY_DIR}/shaders/shader.vert)
+
 add_custom_target(copy-files ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         ${CMAKE_CURRENT_SOURCE_DIR}/resources
         ${CMAKE_BINARY_DIR}/resources
 )

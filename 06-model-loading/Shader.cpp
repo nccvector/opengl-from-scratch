@@ -1,11 +1,11 @@
-#include <glad/glad.h>
-
 #include "Shader.h"
 #include "utils.h"
 
 
-void Shader::use() {
+void Shader::Draw(Model* model) {
   glUseProgram( program );
+  glBindVertexArray(model->GetVAO());
+  glDrawElements(GL_TRIANGLES, model->GetElementsCount(), GL_UNSIGNED_INT, 0);
 }
 
 void Shader::loadAndCompile( const char* path, unsigned int shader ) {
