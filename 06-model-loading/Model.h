@@ -17,10 +17,8 @@ struct Vertex{
 };
 
 struct Mesh{
-  std::vector<Vertex> vertices;
-
   unsigned int VBO, VAO;
-  unsigned int numTriangles;
+  unsigned int numVertices;
 };
 
 struct Model{
@@ -33,7 +31,7 @@ struct Model{
 namespace ModelTools {
 
   void CreateModelFromFbxNode(FbxNode* node, Model& model);
-  void LoadOnDevice(Model& model);
+  void LoadMeshOnDevice(Mesh& mesh, std::vector<Vertex> vertices);
 
 };
 

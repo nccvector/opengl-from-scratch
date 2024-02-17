@@ -92,7 +92,6 @@ int main() {
 
     Model newModel;
     ModelTools::CreateModelFromFbxNode( node, newModel );
-    ModelTools::LoadOnDevice( newModel );
 
     models.push_back( newModel );
   }

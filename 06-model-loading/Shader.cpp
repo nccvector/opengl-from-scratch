@@ -13,7 +13,7 @@ void Shader::Draw( Camera* camera, Model* model ) {
   for ( Mesh mesh : model->meshes ) {
     glBindVertexArray( model->meshes[0].VAO );
 //    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles, GL_UNSIGNED_INT, 0);
-    glDrawArrays( GL_TRIANGLES, 0, model->meshes[0].numTriangles );
+    glDrawArrays( GL_TRIANGLES, 0, model->meshes[0].numVertices);
   }
 }
 

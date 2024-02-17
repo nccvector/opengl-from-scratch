@@ -10,20 +10,21 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
 
   // Declare memory for mesh
   model.meshes.resize( 1 );
+  std::vector<Vertex> vertices;
 
-  int vertexCount              = mesh->GetControlPointsCount();
-  int indexCount               = mesh->GetPolygonVertexCount();
-  model.meshes[0].numTriangles = indexCount;
+  int vertexCount             = mesh->GetControlPointsCount();
+  int indexCount              = mesh->GetPolygonVertexCount();
+  model.meshes[0].numVertices = indexCount;
 
   // Copy indices to model
   int* indices = mesh->GetPolygonVertices();
 
   // Resize vertices to be of the size of elements
-  model.meshes[0].vertices.resize( indexCount ); // Declare memory
+  vertices.resize( indexCount ); // Declare memory
 
   // Copy vertices to model
   FbxVector4* pVertices = mesh->GetControlPoints();
-  model.meshes[0].vertices.resize( indexCount ); // Declare memory
+  vertices.resize( indexCount ); // Declare memory
 
   // Copy normals to model
   FbxArray<FbxVector4> pNormals;
@@ -55,31 +56,34 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
     }
 
     // Add position
-    model.meshes[0].vertices[i].position = {
+    vertices[i].position = {
         static_cast<float>( pVertex[0] ), static_cast<float>( pVertex[1] ), static_cast<float>( pVertex[2] ) };
 
     // Add normal
-    model.meshes[0].vertices[i].normal = {
+    vertices[i].normal = {
         static_cast<float>( pNormal[0] ), static_cast<float>( pNormal[1] ), static_cast<float>( pNormal[2] ) };
 
-    model.meshes[0].vertices[i].texCoord = { static_cast<float>( pTexCoord[0] ), static_cast<float>( pTexCoord[1] ) };
+    vertices[i].texCoord = { static_cast<float>( pTexCoord[0] ), static_cast<float>( pTexCoord[1] ) };
 
     //    std::cout << "Vertex: " << model.meshes[0].vertices[i][0] << ", " << model.meshes[0].vertices[i][1] << ", "
     //              << model.meshes[0].vertices[i][2] << "\n";
   }
 
-  std::cout << "Loaded vertex count: " << model.meshes[0].vertices.size() << "\n";
+  std::cout << "Loaded vertex count: " << vertices.size() << "\n";
+
+  // Create mesh object on device
+  LoadMeshOnDevice(model.meshes[0], vertices);
 }
 
-void ModelTools::LoadOnDevice( Model& model ) {
-  glGenVertexArrays( 1, &( model.meshes[0].VAO ) );
-  glGenBuffers( 1, &( model.meshes[0].VBO ) );
+void ModelTools::LoadMeshOnDevice( Mesh& mesh, std::vector<Vertex> vertices ) {
+  glGenVertexArrays( 1, &( mesh.VAO ) );
+  glGenBuffers( 1, &( mesh.VBO ) );
 
   // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-  glBindVertexArray( model.meshes[0].VAO );
+  glBindVertexArray( mesh.VAO );
 
-  glBindBuffer( GL_ARRAY_BUFFER, model.meshes[0].VBO );
-  glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * model.meshes[0].vertices.size(), model.meshes[0].vertices.data(),
+  glBindBuffer( GL_ARRAY_BUFFER, mesh.VBO );
+  glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * vertices.size(), vertices.data(),
       GL_STATIC_DRAW );
 
   // Index of different Vertex attributes
@@ -122,6 +126,4 @@ void ModelTools::LoadOnDevice( Model& model ) {
 
   // Release buffer array
   glBindVertexArray( 0 );
-
-  model.loadedOnDevice = true;
 }
