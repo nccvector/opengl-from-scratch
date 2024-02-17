@@ -72,7 +72,7 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
   std::cout << "Loaded vertex count: " << vertices.size() << "\n";
 
   // Create mesh object on device
-  LoadMeshOnDevice(model.meshes[0], vertices);
+  LoadMeshOnDevice( model.meshes[0], vertices );
 }
 
 void ModelTools::LoadMeshOnDevice( Mesh& mesh, std::vector<Vertex> vertices ) {
@@ -83,8 +83,7 @@ void ModelTools::LoadMeshOnDevice( Mesh& mesh, std::vector<Vertex> vertices ) {
   glBindVertexArray( mesh.VAO );
 
   glBindBuffer( GL_ARRAY_BUFFER, mesh.VBO );
-  glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * vertices.size(), vertices.data(),
-      GL_STATIC_DRAW );
+  glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * vertices.size(), vertices.data(), GL_STATIC_DRAW );
 
   // Index of different Vertex attributes
   const unsigned int positionAttribIndex = 0;
