@@ -30,6 +30,12 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
   mesh->GenerateNormals();
   mesh->GetPolygonVertexNormals( pNormals );
 
+  // Copy texCoords to model
+  FbxStringList names;
+  mesh->GetUVSetNames( names );
+  FbxArray<FbxVector2> pTexCoords;
+  mesh->GetPolygonVertexUVs( names[0], pTexCoords ); // first name is "default"
+
   for ( int i = 0; i < indexCount; i++ ) {
     int vertexIndex    = indices[i];
     FbxVector4 pVertex = pVertices[vertexIndex];
@@ -41,6 +47,13 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
       pNormal = { 0, 0, 0, 0 };
     }
 
+    FbxVector2 pTexCoord;
+    if ( pTexCoords.Size() > 0 ) {
+      pTexCoord = pTexCoords[i];
+    } else {
+      pTexCoord = { 0, 0 };
+    }
+
     // Add position
     model.meshes[0].vertices[i].position = {
         static_cast<float>( pVertex[0] ), static_cast<float>( pVertex[1] ), static_cast<float>( pVertex[2] ) };
@@ -49,7 +62,7 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
     model.meshes[0].vertices[i].normal = {
         static_cast<float>( pNormal[0] ), static_cast<float>( pNormal[1] ), static_cast<float>( pNormal[2] ) };
 
-    model.meshes[0].vertices[i].texCoord = { 0, 0 };
+    model.meshes[0].vertices[i].texCoord = { static_cast<float>( pTexCoord[0] ), static_cast<float>( pTexCoord[1] ) };
 
     //    std::cout << "Vertex: " << model.meshes[0].vertices[i][0] << ", " << model.meshes[0].vertices[i][1] << ", "
     //              << model.meshes[0].vertices[i][2] << "\n";

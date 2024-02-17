@@ -9,6 +9,7 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(abs(Normal.x), abs(Normal.y), abs(Normal.z), 1);
-//    FragColor = texture(colorTexture, uv);
+    //    FragColor = vec4(abs(Normal.x), abs(Normal.y), abs(Normal.z), 1);
+    FragColor = vec4(abs(TexCoord.x), abs(TexCoord.y), 0, 1);
+    //    FragColor = texture(colorTexture, uv);
 }
