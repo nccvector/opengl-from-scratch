@@ -94,24 +94,38 @@ int main() {
     ModelTools::CreateModelFromFbxNode( node, newModel );
     ModelTools::LoadOnDevice( newModel );
 
-    models.push_back(newModel);
+    models.push_back( newModel );
   }
 
   // Create a camera to render the scene
   Camera camera( 65.0f, 1.3333f, 0.0001, 10000.0 );
-  camera.SetTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 500.0f)));
+  camera.SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 500.0f ) ) );
 
   // render loop
   // -----------
+  auto startTime        = Clock::now();
+  double timeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - startTime ).count();
+
+  // Configure opengl depth settings
+  glEnable( GL_DEPTH_TEST ); // ENABLE DEPTH
+  glDepthFunc( GL_LESS );
   while ( !glfwWindowShouldClose( window ) ) {
     // input
     // -----
     processInput( window );
 
+    // Camera rotation around world up (y-axis)
+    float angle    = timeSinceStart / 1000.0f;
+    float distance = 500.0f;
+    glm::mat4 rotated = glm::rotate(glm::mat4(1), angle, {0, 1, 0});
+    glm::mat4 newTransform = glm::translate(rotated, {0, 0, distance});
+
+    camera.SetTransform( newTransform );
+
     // render
     // ------
     glClearColor( 0.05f, 0.03f, 0.03f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // Create models on device
     for ( auto model : models ) {
@@ -122,6 +136,9 @@ int main() {
     // -------------------------------------------------------------------------------
     glfwSwapBuffers( window );
     glfwPollEvents();
+
+    // Update time
+    timeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - startTime ).count();
   }
 
   // glfw: terminate, clearing all previously allocated GLFW resources.

@@ -7,15 +7,14 @@ void Shader::Draw( Camera* camera, Model* model ) {
   glm::mat4 modelViewProjection = camera->GetViewMatrix() * model->transform;
   glUseProgram( program );
   glUniformMatrix4fv(
-      glGetUniformLocation( program, "modelViewProjection" ),
-      1,
-      GL_FALSE,
-      glm::value_ptr( modelViewProjection )
-  );
+      glGetUniformLocation( program, "modelViewProjection" ), 1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
 
   // Draw all the model meshes
-  glBindVertexArray( model->VAO );
-  glDrawElements( GL_TRIANGLES, model->meshes[0].indices.size(), GL_UNSIGNED_INT, 0 );
+  for ( Mesh mesh : model->meshes ) {
+    glBindVertexArray( model->meshes[0].VAO );
+//    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles, GL_UNSIGNED_INT, 0);
+    glDrawArrays( GL_TRIANGLES, 0, model->meshes[0].numTriangles );
+  }
 }
 
 void Shader::loadAndCompile( const char* path, unsigned int shader ) {

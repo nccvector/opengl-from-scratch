@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(06-model-loading LANGUAGES C CXX)
 
 # Find OpenGL
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 
 # Add glfw3

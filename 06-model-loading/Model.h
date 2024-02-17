@@ -10,16 +10,20 @@
 #include <fbxsdk.h>
 #include "glad/glad.h"
 
+struct Vertex{
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 texCoord;
+};
 
 struct Mesh{
-  std::vector<glm::vec3> vertices;
-  std::vector<glm::vec3> normal;
-  std::vector<glm::vec2> uvs;
-  std::vector<int> indices;
+  std::vector<Vertex> vertices;
+
+  unsigned int VBO, VAO;
+  unsigned int numTriangles;
 };
 
 struct Model{
-  unsigned int VBO, VAO, EBO;
   std::vector<Mesh> meshes;
   glm::mat4 transform = glm::mat4(1.0f);
   bool loadedOnDevice = false;
