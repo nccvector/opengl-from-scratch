@@ -212,8 +212,9 @@ void ModelTools::CreateModelFromFbxNode( FbxNode* node, Model& model ) {
     }
 
     // Add position
-    vertices[i].position = {
-        static_cast<float>( pVertex[0] ), static_cast<float>( pVertex[1] ), static_cast<float>( pVertex[2] ) };
+    float scale          = 1.0f;
+    vertices[i].position = { scale * static_cast<float>( pVertex[0] ), scale * static_cast<float>( pVertex[1] ),
+        scale * static_cast<float>( pVertex[2] ) };
 
     // Add normal
     vertices[i].normal = {

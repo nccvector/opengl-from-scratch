@@ -136,7 +136,7 @@ int main() {
   // ================================================================================
 
   // Create a camera to render the scene
-  Camera camera( 65.0f, (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.0001, 10000.0 );
+  Camera camera( 65.0f, (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.001, 2000.0 );
   camera.SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 500.0f ) ) );
 
   // render loop
