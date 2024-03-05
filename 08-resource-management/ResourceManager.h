@@ -21,7 +21,7 @@ template <typename T>
 std::vector<std::shared_ptr<T>> GetResourceList();
 
 template <typename T>
-void AddResource( std::shared_ptr<T> resource );
+void AddResource( const std::shared_ptr<T>& resource );
 
 } // namespace ResourceManager
 

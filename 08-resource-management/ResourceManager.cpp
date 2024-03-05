@@ -35,25 +35,25 @@ std::vector<std::shared_ptr<Model>> GetResourceList<Model>() {
 }
 
 template <typename T>
-void AddResource( std::shared_ptr<T> resource ) {}
+void AddResource( const std::shared_ptr<T>& resource ) {}
 
 template <>
-void AddResource<Texture>( std::shared_ptr<Texture> resource ) {
+void AddResource<Texture>( const std::shared_ptr<Texture>& resource ) {
   textures.push_back( resource );
 }
 
 template <>
-void AddResource<Material>( std::shared_ptr<Material> resource ) {
+void AddResource<Material>( const std::shared_ptr<Material>& resource ) {
   materials.push_back( resource );
 }
 
 template <>
-void AddResource<Mesh>( std::shared_ptr<Mesh> resource ) {
+void AddResource<Mesh>( const std::shared_ptr<Mesh>& resource ) {
   meshes.push_back( resource );
 }
 
 template <>
-void AddResource<Model>( std::shared_ptr<Model> resource ) {
+void AddResource<Model>( const std::shared_ptr<Model>& resource ) {
   models.push_back( resource );
 }
 
