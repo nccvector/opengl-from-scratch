@@ -1,24 +1,26 @@
 #ifndef SHADER_ABSTRACTION_SHADER_H
 #define SHADER_ABSTRACTION_SHADER_H
 
+// GL
+#include "glad/glad.h"
+
 #include "Camera.h"
-#include "ModelTools.h"
 
 class Shader {
 public:
   Shader()  = default;
   ~Shader() = default;
 
-  void Draw(Camera* camera, std::shared_ptr<Model> model);
-
   void destroy() {
     glDeleteProgram( program );
   }
 
+  inline unsigned int GetProgram(){
+    return program;
+  }
+
 protected:
   void loadAndCompile( const char* path, unsigned int shader );
-
-public:
   unsigned int program;
 };
 

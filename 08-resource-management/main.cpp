@@ -4,15 +4,14 @@
 #include <GLFW/glfw3.h>
 
 #include <fbxsdk.h>
-
-#include <iostream>
-
-#include "Camera.h"
-#include "Shader.h"
-#include "common.h"
 #include "utils.h"
 
+#include "Shader.h"
+#include "Camera.h"
+
 #include "ResourceManager.h"
+
+#include "glm/gtc/type_ptr.hpp"
 
 // settings
 const unsigned int SCR_WIDTH  = 1280;
@@ -91,6 +90,7 @@ int main() {
 
   // Initialize resource manager
   // ...
+  ResourceManager::InitializeShaders();
 
   // ================================================================================
   // Load scene and resources
@@ -113,15 +113,29 @@ int main() {
     std::cout << "Loading texture: " << texture->GetFileName() << "\n";
 
     // Create texture
-    std::shared_ptr<Texture> newTexture =
-        ModelTools::CreateTextureFromPath( texture->GetFileName(), texture->GetName() );
+    std::shared_ptr<Texture> newTexture = std::make_shared<Texture>( texture->GetName(), texture->GetFileName() );
 
-    if ( newTexture == nullptr ) {
+    // Check success
+    if ( !newTexture->IsCreatedOnDevice() ) {
       continue;
     }
 
-    // Add to global textures if loaded successfully
+    // Register in resource manager
     ResourceManager::AddResource<Texture>( newTexture );
+  }
+
+  // Loading materials from scene
+  for ( int i = 0; i < lScene->GetSrcObjectCount<FbxSurfaceMaterial>(); i++ ) {
+    FbxSurfaceMaterial* material = lScene->GetSrcObject<FbxSurfaceMaterial>( i );
+
+    std::cout << "Loading material: " << material->GetName() << "\n";
+
+    // Create material
+    std::shared_ptr<Material> newMaterial = std::make_shared<Material>( material->GetName() );
+    newMaterial->CreateFromFbxSurfaceMaterial( material );
+
+    // Register in resource manager
+    ResourceManager::AddResource<Material>( newMaterial );
   }
 
   // Create models
@@ -133,27 +147,34 @@ int main() {
       continue;
     }
 
-    std::shared_ptr<Material> newMaterial = ModelTools::CreateMaterialFromFbxNode( node );
-    std::shared_ptr<Mesh> newMesh         = ModelTools::CreateMeshFromFbxNode( node );
-
-    // Skip if failed to create mesh
-    if ( newMesh == nullptr ) {
-      continue;
+    // Material for new mesh
+    std::shared_ptr<Material> mat = nullptr;
+    for ( const std::shared_ptr<Material>& testMaterial : ResourceManager::GetResourceList<Material>() ) {
+      if ( strcmp( testMaterial->GetName(), node->GetMaterial( 0 )->GetName() ) == 0 ) {
+        mat = testMaterial;
+        break;
+      }
     }
 
+    // Create new material if it does not exist
+    if ( mat == nullptr ) {
+      std::shared_ptr<Material> newMaterial = std::make_shared<Material>( node->GetMaterial( 0 )->GetName() );
+      newMaterial->CreateFromFbxSurfaceMaterial( node->GetMaterial( 0 ) );
+    }
+
+    // Create mesh for this model
+    std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>( node->GetName(), mat );
+    newMesh->CreateFromFbxMesh( node->GetMesh() );
+
     // Creating model
-    std::shared_ptr<Model> newModel = std::make_shared<Model>();
-    newModel->name                  = node->GetName();
+    std::shared_ptr<Model> newModel = std::make_shared<Model>( node->GetName(), newMesh );
 
-    // Linking
-    newMesh->material = newMaterial;       // link material to mesh
-    newModel->meshes.push_back( newMesh ); // link mesh to model
-
-    // Registering global resources
-    ResourceManager::AddResource<Material>( newMaterial );
+    // Register in resource manager
     ResourceManager::AddResource<Mesh>( newMesh );
     ResourceManager::AddResource<Model>( newModel );
   }
+
+  std::vector<std::shared_ptr<Mesh>> meshes = ResourceManager::GetResourceList<Mesh>();
 
   // Create, load and compile shaders
   PhongShader phongShader;
@@ -197,9 +218,15 @@ int main() {
 
     // Create models on device
     for ( std::shared_ptr<Model> model : ResourceManager::GetResourceList<Model>() ) {
-      float bunnyheight = 0.0f + 100.0f + glm::sin( timeSinceStart / 1000.0f );
-      model->transform  = glm::translate( glm::mat4( 1 ), { 0, bunnyheight, 0 } );
-      phongShader.Draw( &camera, model );
+      glm::mat4 modelViewProjection = camera.GetViewMatrix() * model->GetTransform();
+      glUseProgram( ResourceManager::defaultShader->GetProgram() );
+      glUniformMatrix4fv( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "modelViewProjection" ), 1, GL_FALSE,
+          glm::value_ptr( modelViewProjection ) );
+      glUniform1f( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "time" ), (float) timeSinceStart );
+
+      float bunnyheight     = 0.0f + 100.0f + glm::sin( timeSinceStart / 1000.0f );
+      model->GetTransform() = glm::translate( glm::mat4( 1 ), { 0, bunnyheight, 0 } );
+      model->Draw();
     }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved

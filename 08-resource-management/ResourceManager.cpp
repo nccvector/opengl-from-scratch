@@ -6,10 +6,15 @@
 
 namespace ResourceManager {
 
-std::vector<std::shared_ptr<Texture>> textures   = {};
-std::vector<std::shared_ptr<Material>> materials = {};
-std::vector<std::shared_ptr<Mesh>> meshes        = {};
-std::vector<std::shared_ptr<Model>> models       = {};
+std::shared_ptr<PhongShader> defaultShader = nullptr;
+std::vector<std::shared_ptr<Texture>> textures    = {};
+std::vector<std::shared_ptr<Material>> materials  = {};
+std::vector<std::shared_ptr<Mesh>> meshes         = {};
+std::vector<std::shared_ptr<Model>> models        = {};
+
+void InitializeShaders(){
+  defaultShader = std::make_shared<PhongShader>();
+}
 
 template <typename T>
 std::vector<std::shared_ptr<T>> GetResourceList() {}

@@ -1,7 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "ModelTools.h"
 #include "common.h"
 #include <fbxsdk.h>
 

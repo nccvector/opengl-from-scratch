@@ -32,10 +32,13 @@ add_executable(${PROJECT_NAME}
         main.cpp
         Shader.cpp
         utils.cpp
-        ModelTools.cpp
         Camera.cpp
         common.cpp
         ResourceManager.cpp
+        Texture.cpp
+        Material.cpp
+        Mesh.cpp
+        Model.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

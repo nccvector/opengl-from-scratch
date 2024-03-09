@@ -2,35 +2,6 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "utils.h"
 
-void Shader::Draw( Camera* camera, std::shared_ptr<Model> model ) {
-  glm::mat4 modelViewProjection = camera->GetViewMatrix() * model->transform;
-  glUseProgram( program );
-  glUniformMatrix4fv(
-      glGetUniformLocation( program, "modelViewProjection" ), 1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
-  glUniform1f( glGetUniformLocation( program, "time" ), (float) timeSinceStart );
-
-  // Draw all the model meshes
-  for ( std::shared_ptr<Mesh> mesh : model->meshes ) {
-    // Bind texture of this mesh
-    if ( mesh->material->textures[DIFFUSE]->handle ) {
-      glActiveTexture( GL_TEXTURE0 );
-      glUniform1i( glGetUniformLocation( program, "TextureDiffuse" ), DIFFUSE );
-      glBindTexture( GL_TEXTURE_2D, mesh->material->textures[DIFFUSE]->handle );
-    }
-
-    if ( mesh->material->textures[NORMAL]->handle ) {
-      glActiveTexture( GL_TEXTURE1 );
-      glUniform1i( glGetUniformLocation( program, "TextureNormal" ), NORMAL );
-      glBindTexture( GL_TEXTURE_2D, mesh->material->textures[NORMAL]->handle );
-    }
-
-    glBindVertexArray( model->meshes[0]->VAO );
-    //    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles,
-    //    GL_UNSIGNED_INT, 0);
-    glDrawArrays( GL_TRIANGLES, 0, model->meshes[0]->numVertices );
-  }
-}
-
 void Shader::loadAndCompile( const char* path, unsigned int shader ) {
   std::string shaderSource;
   utils::loadFile( path, shaderSource );

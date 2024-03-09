@@ -11,16 +11,19 @@
 #include <string>
 #include <memory>
 
-
-// Image read write headers
-#include "stb_image.h"
-#include "stb_image_write.h"
+// GL
+#include "glad/glad.h"
 
 // GL Mathematics
 #include <glm/glm.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
+// Image read write headers
+#include "stb_image.h"
+#include "stb_image_write.h"
+
 #include "ResourceManager.h"
+
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds Milliseconds;
