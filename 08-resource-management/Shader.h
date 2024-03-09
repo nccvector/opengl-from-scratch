@@ -19,9 +19,24 @@ public:
     return program;
   }
 
+  inline bool IsActive(){
+    return mActive;
+  }
+
+  inline void Activate(){
+    glUseProgram( program );
+    mActive = true;
+  }
+
+  inline void Deactivate(){
+    glUseProgram(0);
+    mActive = false;
+  }
+
 protected:
   void loadAndCompile( const char* path, unsigned int shader );
   unsigned int program;
+  bool mActive = false;
 };
 
 class PhongShader : public Shader {

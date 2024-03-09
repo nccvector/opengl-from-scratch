@@ -6,14 +6,23 @@
 
 namespace ResourceManager {
 
-std::shared_ptr<PhongShader> defaultShader = nullptr;
-std::vector<std::shared_ptr<Texture>> textures    = {};
-std::vector<std::shared_ptr<Material>> materials  = {};
-std::vector<std::shared_ptr<Mesh>> meshes         = {};
-std::vector<std::shared_ptr<Model>> models        = {};
+std::shared_ptr<PhongShader> defaultShader       = nullptr;
+std::vector<std::shared_ptr<Texture>> textures   = {};
+std::vector<std::shared_ptr<Material>> materials = {};
+std::vector<std::shared_ptr<Mesh>> meshes        = {};
+std::vector<std::shared_ptr<Model>> models       = {};
 
-void InitializeShaders(){
+void InitializeShaders() {
   defaultShader = std::make_shared<PhongShader>();
+}
+
+void EnsureShaderActiveState( std::shared_ptr<PhongShader> shader ) {
+  // Deactivate currently bound shader before activing new one
+  // currentShader.Deativate();
+  // curretnShader = shader;
+  if ( !shader->IsActive() ) {
+    shader->Activate();
+  }
 }
 
 template <typename T>

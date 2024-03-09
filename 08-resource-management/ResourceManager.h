@@ -5,7 +5,6 @@
 #ifndef INC_08_RESOURCE_MANAGEMENT_RESOURCEMANAGER_H
 #define INC_08_RESOURCE_MANAGEMENT_RESOURCEMANAGER_H
 
-#include "common.h"
 #include "Shader.h"
 #include "Types.h"
 #include "Texture.h"
@@ -30,6 +29,7 @@ template <typename T>
 void AddResource( const std::shared_ptr<T>& resource );
 
 void InitializeShaders();
+void EnsureShaderActiveState( std::shared_ptr<PhongShader> shader );
 
 } // namespace ResourceManager
 

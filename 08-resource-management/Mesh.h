@@ -13,9 +13,10 @@
 #include "Types.h"
 #include "Material.h"
 
+
 class Mesh {
 public:
-  Mesh( const char* name, std::shared_ptr<Material> material );
+  Mesh( const char* name, const std::shared_ptr<Material>& material );
 
   void CreateFromFbxMesh( FbxMesh* mesh );
   std::vector<Vertex> GetVerticesFromFbxMesh( FbxMesh* mesh );
@@ -27,27 +28,9 @@ public:
     return mName;
   }
 
-  inline void Draw() {
-    // Bind texture of this mesh
-    if ( mMaterial->GetTextures()[DIFFUSE]->GetHandle() ) {
-      glActiveTexture( GL_TEXTURE0 );
-      glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureDiffuse" ), DIFFUSE );
-      glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[DIFFUSE]->GetHandle() );
-    }
+  void Draw();
 
-    if ( mMaterial->GetTextures()[NORMAL]->GetHandle() ) {
-      glActiveTexture( GL_TEXTURE1 );
-      glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureNormal" ), NORMAL );
-      glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[NORMAL]->GetHandle() );
-    }
-
-    glBindVertexArray( mVAO );
-    //    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles,
-    //    GL_UNSIGNED_INT, 0);
-    glDrawArrays( GL_TRIANGLES, 0, mNumVertices );
-  }
-
-  inline void SetMaterial(const std::shared_ptr<Material>& material){
+  inline void SetMaterial( const std::shared_ptr<Material>& material ) {
     mMaterial = material;
   }
 
@@ -57,6 +40,7 @@ protected:
   // GL data
   unsigned int mVBO, mVAO;
 
+  // host data
   unsigned int mNumVertices;
   std::vector<Vertex> mVertices;
   std::shared_ptr<Material> mMaterial;

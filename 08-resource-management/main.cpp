@@ -100,7 +100,7 @@ int main() {
 
   // Load the scene.
   bool lResult = utils::LoadScene( "resources/stanford-bunny.fbx", lScene );
-  //    bool lResult = utils::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
+  //  bool lResult = utils::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
 
   std::cout << "Objects in scene: " << lScene->GetSrcObjectCount<FbxNode>() << std::endl;
   std::cout << "Meshes in scene: " << lScene->GetSrcObjectCount<FbxMesh>() << std::endl;
@@ -220,9 +220,10 @@ int main() {
     for ( std::shared_ptr<Model> model : ResourceManager::GetResourceList<Model>() ) {
       glm::mat4 modelViewProjection = camera.GetViewMatrix() * model->GetTransform();
       glUseProgram( ResourceManager::defaultShader->GetProgram() );
-      glUniformMatrix4fv( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "modelViewProjection" ), 1, GL_FALSE,
-          glm::value_ptr( modelViewProjection ) );
-      glUniform1f( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "time" ), (float) timeSinceStart );
+      glUniformMatrix4fv( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "modelViewProjection" ),
+          1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
+      glUniform1f(
+          glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "time" ), (float) timeSinceStart );
 
       float bunnyheight     = 0.0f + 100.0f + glm::sin( timeSinceStart / 1000.0f );
       model->GetTransform() = glm::translate( glm::mat4( 1 ), { 0, bunnyheight, 0 } );

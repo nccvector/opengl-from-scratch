@@ -5,7 +5,32 @@
 #include "Material.h"
 #include "Mesh.h"
 
-Mesh::Mesh( const char* name, std::shared_ptr<Material> material ) {
+#include "ResourceManager.h"
+
+void Mesh::Draw() {
+  // Activate shader
+  ResourceManager::EnsureShaderActiveState( mMaterial->GetShader() );
+
+  // Bind texture of this mesh
+  if ( mMaterial->GetTextures()[DIFFUSE]->GetHandle() ) {
+    glActiveTexture( GL_TEXTURE0 );
+    glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureDiffuse" ), DIFFUSE );
+    glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[DIFFUSE]->GetHandle() );
+  }
+
+  if ( mMaterial->GetTextures()[NORMAL]->GetHandle() ) {
+    glActiveTexture( GL_TEXTURE1 );
+    glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureNormal" ), NORMAL );
+    glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[NORMAL]->GetHandle() );
+  }
+
+  glBindVertexArray( mVAO );
+  //    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles,
+  //    GL_UNSIGNED_INT, 0);
+  glDrawArrays( GL_TRIANGLES, 0, mNumVertices );
+}
+
+Mesh::Mesh( const char* name, const std::shared_ptr<Material>& material ) {
   mName     = name;
   mMaterial = material;
 }
@@ -101,7 +126,6 @@ std::vector<Vertex> Mesh::GetVerticesFromFbxMesh( FbxMesh* mesh ) {
 
   // Copy vertices to model
   FbxVector4* pVertices = mesh->GetControlPoints();
-  vertices.resize( indexCount ); // Declare memory
 
   // Copy normals to model
   FbxArray<FbxVector4> pNormals;
