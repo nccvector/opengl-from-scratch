@@ -5,7 +5,9 @@
 #include <iostream>
 
 // GL
-#include "glad/glad.h"
+#include <glad/glad.h>
+
+#include "Common.h"
 
 #include "Texture.h"
 
@@ -22,11 +24,11 @@ Texture::Texture( const char* name, const char* filePath ) {
   unsigned char* data = stbi_load( filePath, &( width ), &( height ), &( channels ), 4 );
 
   if ( !data ) {
-    std::cerr << "Failed to load texture from disk: " << filePath << "\n";
+    ERROR("Failed to load texture from disk: {}", filePath);
     return;
   }
 
-  std::cout << "Successfully loaded texture from disk: " << filePath << "\n";
+  DEBUG("Successfully loaded texture from disk: {}", filePath);
 
   CreateFromData( name, data, width, height, channels );
 
@@ -39,7 +41,7 @@ void Texture::CreateFromData( const char* name, unsigned char* data, int width, 
   // Write this texture to disk
   std::string buf( name );
   buf.append( ".png" );
-  std::cout << "Writing texture: " << buf << "\n";
+  INFO("Writing texture: ", buf);
   stbi_write_png( buf.c_str(), width, height, channels, data, channels * sizeof( unsigned char ) * width );
 #endif
 

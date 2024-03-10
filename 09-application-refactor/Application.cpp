@@ -3,6 +3,8 @@
 //
 
 #include "Application.h"
+#include "Common.h"
+
 
 Application::Application() {
   mWindowManager = WindowManager();
@@ -25,7 +27,7 @@ bool Application::InitializeGL() {
   // glad: load all OpenGL function pointers
   // ---------------------------------------
   if ( !gladLoadGLLoader( (GLADloadproc) glfwGetProcAddress ) ) {
-    // TODO: Add logging
+    ERROR( "Could not load GLAD" );
     return false;
   }
 
@@ -90,20 +92,20 @@ void Application::LoadScene() {
   FbxScene* lScene;
 
   // Load the scene.
-  bool lResult = ResourceManager::LoadScene( "resources/primitives/primitive-cube.fbx", lScene );
-  //    bool lResult = ResourceManager::LoadScene( "resources/stanford-bunny.fbx", lScene );
-  //  bool lResult = ResourceManager::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
+  //  bool lResult = ResourceManager::LoadScene( "resources/primitives/primitive-sphere.fbx", lScene );
+//  bool lResult = ResourceManager::LoadScene( "resources/primitives/primitive-cube.fbx", lScene );
+      bool lResult = ResourceManager::LoadScene( "resources/stanford-bunny.fbx", lScene );
+//    bool lResult = ResourceManager::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
 
-  // TODO: Add logging for these
-  //    std::cout << "Objects in scene: " << lScene->GetSrcObjectCount<FbxNode>() << std::endl;
-  //    std::cout << "Meshes in scene: " << lScene->GetSrcObjectCount<FbxMesh>() << std::endl;
-  //    std::cout << "Textures in scene: " << lScene->GetSrcObjectCount<FbxFileTexture>() << std::endl;
-  //    std::cout << "Lights in scene: " << lScene->GetSrcObjectCount<FbxLight>() << std::endl;
+  DEBUG("Objects in scene: {}", lScene->GetSrcObjectCount<FbxNode>());
+  DEBUG("Textures in scene: {}", lScene->GetSrcObjectCount<FbxFileTexture>());
+  DEBUG("Meshes in scene: {}", lScene->GetSrcObjectCount<FbxMesh>());
+  DEBUG("Lights in scene: {}", lScene->GetSrcObjectCount<FbxLight>());
 
   // Loading textures from scene
   for ( int i = 0; i < lScene->GetSrcObjectCount<FbxFileTexture>(); i++ ) {
     FbxFileTexture* texture = lScene->GetSrcObject<FbxFileTexture>( i );
-    std::cout << "Loading texture: " << texture->GetFileName() << "\n";
+    DEBUG("Loading texture: {}", texture->GetFileName());
 
     // Create texture
     std::shared_ptr<Texture> newTexture = std::make_shared<Texture>( texture->GetName(), texture->GetFileName() );
@@ -121,8 +123,7 @@ void Application::LoadScene() {
   for ( int i = 0; i < lScene->GetSrcObjectCount<FbxSurfaceMaterial>(); i++ ) {
     FbxSurfaceMaterial* material = lScene->GetSrcObject<FbxSurfaceMaterial>( i );
 
-    // TODO: Add logging for this
-    //      std::cout << "Loading material: " << material->GetName() << "\n";
+    DEBUG("Loading material: ", material->GetName());
 
     // Create material
     std::shared_ptr<Material> newMaterial = std::make_shared<Material>( material->GetName() );

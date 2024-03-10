@@ -19,6 +19,9 @@ add_library(glad ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/src/glad.c)
 # Add fbxsdk
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/fbxsdk)
 
+# Add spdlog
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog)
+
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/external
         ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
@@ -26,6 +29,7 @@ include_directories(
         ${OPENGL_INCLUDE_DIR}
         ${FBXSDK_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/external/glm
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog/include
 )
 
 # Add cpp and cu files to target. CMake will automatically compile cu with nvcc
@@ -50,6 +54,7 @@ target_link_libraries(${PROJECT_NAME}
         glad
         glfw
         ${FBXSDK_LIBRARY}
+        spdlog
 )
 
 configure_file(shaders/shader.frag ${CMAKE_BINARY_DIR}/shaders/shader.frag)
