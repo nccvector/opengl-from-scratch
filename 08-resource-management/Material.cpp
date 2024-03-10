@@ -8,11 +8,33 @@
 #include "Texture.h"
 #include "ResourceManager.h"
 
-Material::Material( const char* name ) {
+Material::Material( const char* name, glm::vec3 color ) {
   mName = name;
 
   // Assign default shader on creation
   mShader = ResourceManager::defaultShader;
+
+  // Initialize textures
+  std::cout << "Creating 1x1 texture for material: " << mName << "\n";
+  std::vector<unsigned char> pixel = {
+      (unsigned char) ( color[0] * 255 ),
+      (unsigned char) ( color[1] * 255 ),
+      (unsigned char) ( color[2] * 255 ),
+      (unsigned char) ( 1 * 255 ),
+  };
+
+  // Register a new texture
+  std::shared_ptr<Texture> newTexture =
+      std::make_shared<Texture>( name, pixel.data(), 1, 1, 4 );
+
+  if ( newTexture != nullptr ) {
+    // Add to global list
+    ResourceManager::AddResource( newTexture );
+    // Assign to model mesh
+    mTextures[DIFFUSE] = newTexture;
+  }
+
+  mTextures[NORMAL]  = nullptr;
 }
 
 void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {

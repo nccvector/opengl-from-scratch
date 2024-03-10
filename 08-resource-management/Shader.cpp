@@ -1,10 +1,12 @@
-#include "Shader.h"
+#include <iostream>
 #include "glm/gtc/type_ptr.hpp"
-#include "utils.h"
 
-void Shader::loadAndCompile( const char* path, unsigned int shader ) {
+#include "Shader.h"
+#include "ResourceManager.h"
+
+void Shader::LoadAndCompile( const char* path, unsigned int shader ) {
   std::string shaderSource;
-  utils::loadFile( path, shaderSource );
+  ResourceManager::LoadFile( path, shaderSource );
 
   const char* ccShaderSource = shaderSource.c_str();
 
@@ -24,11 +26,11 @@ void Shader::loadAndCompile( const char* path, unsigned int shader ) {
 PhongShader::PhongShader() {
   // Create, load and compile vertex shader
   unsigned int vertexShader = glCreateShader( GL_VERTEX_SHADER );
-  PhongShader::loadAndCompile( "shaders/shader.vert", vertexShader );
+  PhongShader::LoadAndCompile( "shaders/shader.vert", vertexShader );
 
   // Create, load and compile fragment shader
   unsigned int fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-  PhongShader::loadAndCompile( "shaders/shader.frag", fragmentShader );
+  PhongShader::LoadAndCompile( "shaders/shader.frag", fragmentShader );
 
   // Create program
   program = glCreateProgram();

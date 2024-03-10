@@ -34,7 +34,7 @@ public:
   }
 
 protected:
-  void loadAndCompile( const char* path, unsigned int shader );
+  void LoadAndCompile( const char* path, unsigned int shader );
   unsigned int program;
   bool mActive = false;
 };

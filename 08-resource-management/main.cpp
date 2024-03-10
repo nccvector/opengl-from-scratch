@@ -3,15 +3,13 @@
 // After glad import
 #include <GLFW/glfw3.h>
 
+#include <glm/gtc/type_ptr.hpp>
 #include <fbxsdk.h>
-#include "utils.h"
 
-#include "Shader.h"
+#include "Common.h"
 #include "Camera.h"
-
 #include "ResourceManager.h"
 
-#include "glm/gtc/type_ptr.hpp"
 
 // settings
 const unsigned int SCR_WIDTH  = 1280;
@@ -99,8 +97,9 @@ int main() {
   FbxScene* lScene;
 
   // Load the scene.
-  bool lResult = utils::LoadScene( "resources/stanford-bunny.fbx", lScene );
-  //  bool lResult = utils::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
+  bool lResult = ResourceManager::LoadScene( "resources/primitives/primitive-cube.fbx", lScene );
+//    bool lResult = ResourceManager::LoadScene( "resources/stanford-bunny.fbx", lScene );
+  //  bool lResult = ResourceManager::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
 
   std::cout << "Objects in scene: " << lScene->GetSrcObjectCount<FbxNode>() << std::endl;
   std::cout << "Meshes in scene: " << lScene->GetSrcObjectCount<FbxMesh>() << std::endl;
@@ -174,15 +173,11 @@ int main() {
     ResourceManager::AddResource<Model>( newModel );
   }
 
-  std::vector<std::shared_ptr<Mesh>> meshes = ResourceManager::GetResourceList<Mesh>();
-
-  // Create, load and compile shaders
-  PhongShader phongShader;
   // ================================================================================
 
   // Create a camera to render the scene
-  Camera camera( 65.0f, (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.001, 2000.0 );
-  camera.SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 500.0f ) ) );
+  Camera camera( 65.0f, (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.001, 1000.0 );
+  camera.SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
 
   // render loop
   // -----------
@@ -206,7 +201,7 @@ int main() {
     float speed            = 2.0f;
     float angle            = speed * timeSinceStart / 1000.0f;
     float height           = 0.0f;
-    float distance         = 500.0 + 50.0f * glm::sin( timeSinceStart / 100.0f );
+    float distance         = 3.0 + 1.0f * glm::sin( timeSinceStart / 100.0f );
     glm::mat4 rotated      = glm::rotate( glm::mat4( 1 ), angle, { 0, 1, 0 } );
     glm::mat4 newTransform = glm::translate( rotated, { 0, height, distance } );
 
@@ -225,8 +220,7 @@ int main() {
       glUniform1f(
           glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "time" ), (float) timeSinceStart );
 
-      float bunnyheight     = 0.0f + 100.0f + glm::sin( timeSinceStart / 1000.0f );
-      model->GetTransform() = glm::translate( glm::mat4( 1 ), { 0, bunnyheight, 0 } );
+      model->GetTransform() = glm::translate( glm::mat4( 1 ), { 0, 0, 0 } );
       model->Draw();
     }
 

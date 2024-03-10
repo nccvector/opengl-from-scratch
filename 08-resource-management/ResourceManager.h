@@ -31,6 +31,10 @@ void AddResource( const std::shared_ptr<T>& resource );
 void InitializeShaders();
 void EnsureShaderActiveState( std::shared_ptr<PhongShader> shader );
 
+void LoadFile( const char* filePath, std::string& out );
+
+bool LoadScene( const char* path, FbxScene*& scene );
+
 } // namespace ResourceManager
 
 #endif // INC_08_RESOURCE_MANAGEMENT_RESOURCEMANAGER_H

@@ -18,6 +18,7 @@ class Mesh {
 public:
   Mesh( const char* name, const std::shared_ptr<Material>& material );
 
+  void CreateFromVertices(std::vector<Vertex> vertices);
   void CreateFromFbxMesh( FbxMesh* mesh );
   std::vector<Vertex> GetVerticesFromFbxMesh( FbxMesh* mesh );
 

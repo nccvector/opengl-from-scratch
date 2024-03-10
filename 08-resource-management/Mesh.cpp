@@ -12,13 +12,13 @@ void Mesh::Draw() {
   ResourceManager::EnsureShaderActiveState( mMaterial->GetShader() );
 
   // Bind texture of this mesh
-  if ( mMaterial->GetTextures()[DIFFUSE]->GetHandle() ) {
+  if ( mMaterial->GetTextures()[DIFFUSE] ) {
     glActiveTexture( GL_TEXTURE0 );
     glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureDiffuse" ), DIFFUSE );
     glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[DIFFUSE]->GetHandle() );
   }
 
-  if ( mMaterial->GetTextures()[NORMAL]->GetHandle() ) {
+  if ( mMaterial->GetTextures()[NORMAL] ) {
     glActiveTexture( GL_TEXTURE1 );
     glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureNormal" ), NORMAL );
     glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[NORMAL]->GetHandle() );
@@ -95,12 +95,15 @@ void Mesh::CreateOnDevice() {
   glBindVertexArray( 0 );
 }
 
+void Mesh::CreateFromVertices( std::vector<Vertex> vertices ) {
+    CreateOnHost( vertices );
+    CreateOnDevice();
+    // ReleaseFromHost();    // Free vertices memory
+}
+
 void Mesh::CreateFromFbxMesh( FbxMesh* mesh ) {
   std::vector<Vertex> vertices = GetVerticesFromFbxMesh( mesh );
-
-  CreateOnHost( vertices );
-  CreateOnDevice();
-  // ReleaseFromHost();    // Free vertices memory
+  CreateFromVertices(vertices);
 }
 
 std::vector<Vertex> Mesh::GetVerticesFromFbxMesh( FbxMesh* mesh ) {

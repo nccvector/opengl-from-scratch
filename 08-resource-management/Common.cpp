@@ -2,7 +2,7 @@
 // Created by vector on 24/02/19.
 //
 
-#include "common.h"
+#include "Common.h"
 
 // Image read write implementations
 #define STB_IMAGE_IMPLEMENTATION

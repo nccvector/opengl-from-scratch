@@ -31,9 +31,8 @@ include_directories(
 add_executable(${PROJECT_NAME}
         main.cpp
         Shader.cpp
-        utils.cpp
         Camera.cpp
-        common.cpp
+        Common.cpp
         ResourceManager.cpp
         Texture.cpp
         Material.cpp

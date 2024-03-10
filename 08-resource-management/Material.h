@@ -12,7 +12,7 @@
 
 class Material {
 public:
-  Material( const char* name );
+  Material( const char* name, glm::vec3 color = glm::vec3( 1 ) );
 
   void CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material );
 
