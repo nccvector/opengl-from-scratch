@@ -213,14 +213,16 @@ int main() {
 
     // Create models on device
     for ( std::shared_ptr<Model> model : ResourceManager::GetResourceList<Model>() ) {
+      // Activate shader
+      ResourceManager::EnsureShaderActiveState( ResourceManager::defaultShader );
+
+      // Set Model View Projection
       glm::mat4 modelViewProjection = camera.GetViewMatrix() * model->GetTransform();
-      glUseProgram( ResourceManager::defaultShader->GetProgram() );
       glUniformMatrix4fv( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "modelViewProjection" ),
           1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
       glUniform1f(
           glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "time" ), (float) timeSinceStart );
 
-      model->GetTransform() = glm::translate( glm::mat4( 1 ), { 0, 0, 0 } );
       model->Draw();
     }
 
