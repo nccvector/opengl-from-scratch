@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(03-vertex-color-triangle LANGUAGES C CXX)
+project(04-texture-quad LANGUAGES C CXX)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)
@@ -34,10 +34,11 @@ target_link_libraries(${PROJECT_NAME}
         glfw
 )
 
-# Adds a command to the target. Everytime the target "make" is called, the shaders will be copied
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
+configure_file(shaders/shader.frag ${CMAKE_BINARY_DIR}/shaders/shader.frag)
+configure_file(shaders/shader.vert ${CMAKE_BINARY_DIR}/shaders/shader.vert)
+add_custom_target(copy-files ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders
-        COMMENT "Copying shaders" VERBATIM
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources
+        ${CMAKE_BINARY_DIR}/resources
 )
+add_dependencies(${PROJECT_NAME} copy-files)

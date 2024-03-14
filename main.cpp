@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -117,14 +120,16 @@ int main() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   std::vector<float> vertices = {
-      // position        // color
-      0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // top right
-      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f // bottom left
+      // position        // uv
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+      0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+      0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
+      -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
   };
 
   std::vector<int> indices = {  // note that we start from 0!
       0, 1, 2,  // first Triangle
+      0, 2, 3,  // second Triangle
   };
 
   unsigned int VBO, VAO, EBO;
@@ -155,17 +160,17 @@ int main() {
       3,  // number of components per attribute
       GL_FLOAT,
       GL_FALSE,   // normalized (clamp between -1 to 1)
-      6 * sizeof(float),  // stride in bytes to the next same vertex attribute
+      5 * sizeof(float),  // stride in bytes to the next same vertex attribute
       (void *) 0  // byte size offset for the first component
   );
   glEnableVertexAttribArray(0);
 
   glVertexAttribPointer(
       1,  // shader location index
-      3,  // number of components per attribute
+      2,  // number of components per attribute
       GL_FLOAT,
       GL_FALSE,   // normalized
-      6 * sizeof(float),  // stride in bytes to the next same vertex attribute
+      5 * sizeof(float),  // stride in bytes to the next same vertex attribute
       (void *) (3 * sizeof(float))  // byte size offset for first component
   );
   glEnableVertexAttribArray(1);
@@ -179,6 +184,28 @@ int main() {
   // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
   // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
   glBindVertexArray(0);
+
+  // Load image data
+  int texWidth, texHeight, texChannels;
+  stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+  unsigned char* data = stbi_load("resources/uv-check.jpg", &texWidth, &texHeight, &texChannels, 0);
+
+  if (!data)
+    throw "Could not load texture";
+
+  // Create texture
+  GLuint textureId;
+  glGenTextures(1, &textureId);
+  glBindTexture(GL_TEXTURE_2D, textureId);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  stbi_image_free(data);
 
   // uncomment this call to draw in wireframe polygons.
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -195,12 +222,16 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
     // draw our first triangle
     glUseProgram(shaderProgram);
-    glBindVertexArray(
-        VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+    glUniform1i(glGetUniformLocation(textureId, "colorTexture"), 0); // set it manually
+
+    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     //glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDrawElements(GL_TRIANGLES, vertices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
