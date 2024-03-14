@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(04-texture-quad LANGUAGES C CXX)
+project(05-shader-abstraction LANGUAGES C CXX)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)
@@ -26,6 +26,8 @@ include_directories(
 # Add cpp and cu files to target. CMake will automatically compile cu with nvcc
 add_executable(${PROJECT_NAME}
         main.cpp
+        Shader.cpp
+        utils.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
