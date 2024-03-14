@@ -11,6 +11,14 @@ void Shader::Draw( Camera* camera, Model* model ) {
 
   // Draw all the model meshes
   for ( Mesh mesh : model->meshes ) {
+    // Bind texture of this mesh
+    glActiveTexture(GL_TEXTURE0);
+    glUniform1i(glGetUniformLocation(program, "TextureDiffuse"), DIFFUSE);
+    glBindTexture(GL_TEXTURE_2D, mesh.material.textures[DIFFUSE]->handle);
+    glActiveTexture(GL_TEXTURE1);
+    glUniform1i(glGetUniformLocation(program, "TextureNormal"), NORMAL);
+    glBindTexture(GL_TEXTURE_2D, mesh.material.textures[NORMAL]->handle);
+
     glBindVertexArray( model->meshes[0].VAO );
 //    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles, GL_UNSIGNED_INT, 0);
     glDrawArrays( GL_TRIANGLES, 0, model->meshes[0].numVertices);

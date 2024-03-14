@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(06-model-loading LANGUAGES C CXX)
+project(07-material-and-texture LANGUAGES C CXX)
 
 # Find OpenGL
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -34,6 +34,7 @@ add_executable(${PROJECT_NAME}
         utils.cpp
         Model.cpp
         Camera.cpp
+        common.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
