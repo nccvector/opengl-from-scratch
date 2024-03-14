@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(02-simple-triangle LANGUAGES C CXX)
+project(03-vertex-color-triangle LANGUAGES C CXX)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)

@@ -69,7 +69,7 @@ int main() {
   // Load and compile shaders
   // Load shader and compile shaders
   std::string vertexShaderSource;
-  loadFile("shaders/shader.vs", vertexShaderSource);
+  loadFile("shaders/shader.vert", vertexShaderSource);
   const char *ccVertexShaderSource = vertexShaderSource.c_str();
   unsigned int vertexShader;
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -86,7 +86,7 @@ int main() {
   }
 
   std::string fragmentShaderSource;
-  loadFile("shaders/shader.fs", fragmentShaderSource);
+  loadFile("shaders/shader.frag", fragmentShaderSource);
   const char *ccFragmentShaderSource = fragmentShaderSource.c_str();
   unsigned int fragmentShader;
   fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -117,9 +117,10 @@ int main() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   std::vector<float> vertices = {
-      0.0f, 0.5f, 0.0f,  // top right
-      0.5f, -0.5f, 0.0f,  // bottom right
-      -0.5f, -0.5f, 0.0f,  // bottom left
+      // position        // color
+      0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // top right
+      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f // bottom left
   };
 
   std::vector<int> indices = {  // note that we start from 0!
@@ -149,8 +150,25 @@ int main() {
       GL_STATIC_DRAW
   );
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+  glVertexAttribPointer(
+      0,  // shader location index
+      3,  // number of components per attribute
+      GL_FLOAT,
+      GL_FALSE,   // normalized (clamp between -1 to 1)
+      6 * sizeof(float),  // stride in bytes to the next same vertex attribute
+      (void *) 0  // byte size offset for the first component
+  );
   glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(
+      1,  // shader location index
+      3,  // number of components per attribute
+      GL_FLOAT,
+      GL_FALSE,   // normalized
+      6 * sizeof(float),  // stride in bytes to the next same vertex attribute
+      (void *) (3 * sizeof(float))  // byte size offset for first component
+  );
+  glEnableVertexAttribArray(1);
 
   // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -182,7 +200,7 @@ int main() {
     glBindVertexArray(
         VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     //glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, vertices.size(), GL_UNSIGNED_INT, 0);
     // glBindVertexArray(0); // no need to unbind it every time
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
