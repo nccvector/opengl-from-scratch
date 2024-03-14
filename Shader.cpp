@@ -1,33 +1,12 @@
+#include <iostream>
 #include "glm/gtc/type_ptr.hpp"
+
 #include "Shader.h"
-#include "utils.h"
+#include "ResourceManager.h"
 
-
-void Shader::Draw( Camera* camera, Model* model ) {
-  glm::mat4 modelViewProjection = camera->GetViewMatrix() * model->transform;
-  glUseProgram( program );
-  glUniformMatrix4fv(
-      glGetUniformLocation( program, "modelViewProjection" ), 1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
-
-  // Draw all the model meshes
-  for ( Mesh mesh : model->meshes ) {
-    // Bind texture of this mesh
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(program, "TextureDiffuse"), DIFFUSE);
-    glBindTexture(GL_TEXTURE_2D, mesh.material.textures[DIFFUSE]->handle);
-    glActiveTexture(GL_TEXTURE1);
-    glUniform1i(glGetUniformLocation(program, "TextureNormal"), NORMAL);
-    glBindTexture(GL_TEXTURE_2D, mesh.material.textures[NORMAL]->handle);
-
-    glBindVertexArray( model->meshes[0].VAO );
-//    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles, GL_UNSIGNED_INT, 0);
-    glDrawArrays( GL_TRIANGLES, 0, model->meshes[0].numVertices);
-  }
-}
-
-void Shader::loadAndCompile( const char* path, unsigned int shader ) {
+void Shader::LoadAndCompile( const char* path, unsigned int shader ) {
   std::string shaderSource;
-  utils::loadFile( path, shaderSource );
+  ResourceManager::LoadFile( path, shaderSource );
 
   const char* ccShaderSource = shaderSource.c_str();
 
@@ -47,11 +26,11 @@ void Shader::loadAndCompile( const char* path, unsigned int shader ) {
 PhongShader::PhongShader() {
   // Create, load and compile vertex shader
   unsigned int vertexShader = glCreateShader( GL_VERTEX_SHADER );
-  PhongShader::loadAndCompile( "shaders/shader.vert", vertexShader );
+  PhongShader::LoadAndCompile( "shaders/shader.vert", vertexShader );
 
   // Create, load and compile fragment shader
   unsigned int fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
-  PhongShader::loadAndCompile( "shaders/shader.frag", fragmentShader );
+  PhongShader::LoadAndCompile( "shaders/shader.frag", fragmentShader );
 
   // Create program
   program = glCreateProgram();

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(07-material-and-texture LANGUAGES C CXX)
+project(08-resource-management LANGUAGES C CXX)
 
 # Find OpenGL
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -31,10 +31,13 @@ include_directories(
 add_executable(${PROJECT_NAME}
         main.cpp
         Shader.cpp
-        utils.cpp
-        Model.cpp
         Camera.cpp
-        common.cpp
+        Common.cpp
+        ResourceManager.cpp
+        Texture.cpp
+        Material.cpp
+        Mesh.cpp
+        Model.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
