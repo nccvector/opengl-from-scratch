@@ -184,7 +184,7 @@ int main() {
   // Configure opengl depth settings
   glClearColor( 0.025f, 0.015f, 0.015f, 1.0f );
   glEnable( GL_DEPTH_TEST ); // ENABLE DEPTH
-  glEnable( GL_SCISSOR_TEST );
+//  glEnable( GL_SCISSOR_TEST );  // Fix window glitch
   glEnable( GL_BLEND );
   glDepthFunc( GL_LEQUAL );
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
