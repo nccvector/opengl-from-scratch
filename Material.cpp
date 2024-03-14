@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "Common.h"
 #include "Material.h"
 #include "Texture.h"
 #include "ResourceManager.h"
@@ -15,7 +16,7 @@ Material::Material( const char* name, glm::vec3 color ) {
   mShader = ResourceManager::defaultShader;
 
   // Initialize textures
-  std::cout << "Creating 1x1 texture for material: " << mName << "\n";
+  DEBUG("Creating 1x1 texture for material: ", mName);
   std::vector<unsigned char> pixel = {
       (unsigned char) ( color[0] * 255 ),
       (unsigned char) ( color[1] * 255 ),
@@ -53,8 +54,6 @@ void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
       break;
     }
 
-    std::cout << "CHECKING TEX TYPE: " << fbxPropType << "\n";
-
     const FbxProperty prop       = material->FindProperty( fbxPropType );
     const FbxProperty propFactor = material->FindProperty( fbxFactorType );
 
@@ -76,14 +75,12 @@ void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
 
       // Assign texture if available
       const int lFileTextureCount = prop.GetSrcObjectCount<FbxFileTexture>();
-      std::cout << "Texture count: " << lFileTextureCount << "\n";
       if ( lFileTextureCount ) {
         fileTexture = prop.GetSrcObject<FbxFileTexture>();
 
         for ( std::shared_ptr<Texture> texture : ResourceManager::GetResourceList<Texture>() ) {
           if ( strcmp( fileTexture->GetName(), texture->GetName() ) == 0 ) {
-            std::cout << "Assiging texture `" << fileTexture->GetName() << "` to material `" << mName << "`\n";
-
+            DEBUG("Assigning texture {} to material {}", fileTexture->GetName(), mName);
             mTextures[texTypeInt] = texture;
           }
         }
@@ -95,7 +92,7 @@ void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
         newTextureName.append( "_" );
         newTextureName.append( prop.GetName() );
 
-        std::cout << "No texture, creating 1x1 texture for material: " << mName << "\n";
+        WARN("No texture for material {}, so creating 1x1", mName);
 
         std::vector<unsigned char> pixel = {
             (unsigned char) ( lResult[0] * 255 ),

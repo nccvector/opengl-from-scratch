@@ -1,6 +1,7 @@
 #include <iostream>
 #include "glm/gtc/type_ptr.hpp"
 
+#include "Common.h"
 #include "Shader.h"
 #include "ResourceManager.h"
 
@@ -19,7 +20,7 @@ void Shader::LoadAndCompile( const char* path, unsigned int shader ) {
   glGetShaderiv( shader, GL_COMPILE_STATUS, &success );
   if ( !success ) {
     glGetShaderInfoLog( shader, 512, NULL, infoLog );
-    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog << std::endl;
+    throw std::runtime_error( "SHADER COMPILATION FAILED" );
   }
 }
 
@@ -46,7 +47,7 @@ PhongShader::PhongShader() {
   glGetProgramiv( program, GL_LINK_STATUS, &success );
   if ( !success ) {
     glGetProgramInfoLog( program, 512, NULL, infoLog );
-    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+    throw std::runtime_error( "SHADER PROGRAM LINKING FAILED" );
   }
 
   glDeleteShader( vertexShader );

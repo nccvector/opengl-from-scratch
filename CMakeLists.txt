@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(08-resource-management LANGUAGES C CXX)
+project(09-application-refactor LANGUAGES C CXX)
 
 # Find OpenGL
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -11,20 +11,25 @@ find_package(OpenGL REQUIRED)
 set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_BUILD_TESTS OFF)
 set(GLFW_INSTALL OFF)
-add_subdirectory(glfw3)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/glfw3)
 
 # Add glad
-add_library(glad ${CMAKE_CURRENT_SOURCE_DIR}/glad/src/glad.c)
+add_library(glad ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/src/glad.c)
 
 # Add fbxsdk
-add_subdirectory(fbxsdk)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/fbxsdk)
+
+# Add spdlog
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog)
 
 include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/glad/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/external
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/include
         ${OPENGL_INCLUDE_DIR}
         ${FBXSDK_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/glm
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/glm
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog/include
 )
 
 # Add cpp and cu files to target. CMake will automatically compile cu with nvcc
@@ -38,6 +43,10 @@ add_executable(${PROJECT_NAME}
         Material.cpp
         Mesh.cpp
         Model.cpp
+        WindowManager.cpp
+        WindowManager.h
+        Application.cpp
+        Application.h
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -45,6 +54,7 @@ target_link_libraries(${PROJECT_NAME}
         glad
         glfw
         ${FBXSDK_LIBRARY}
+        spdlog
 )
 
 configure_file(shaders/shader.frag ${CMAKE_BINARY_DIR}/shaders/shader.frag)
