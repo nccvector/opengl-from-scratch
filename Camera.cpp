@@ -5,7 +5,10 @@
 #include "Camera.h"
 
 Camera::Camera( float verticalFov, float aspectRatio, float nearPlaneDistance, float farPlaneDistance ) {
-  pProjection = glm::perspective( verticalFov, aspectRatio, nearPlaneDistance, farPlaneDistance );
-  pTransform  = glm::mat4(1.0f);
+  mVerticalFOV = verticalFov;
+  mNearDistance = nearPlaneDistance;
+  mFarDistance = farPlaneDistance;
+  mProjection = glm::perspective( verticalFov, aspectRatio, nearPlaneDistance, farPlaneDistance );
+  mTransform  = glm::mat4(1.0f);
   UpdateViewMatrixCache();
 }

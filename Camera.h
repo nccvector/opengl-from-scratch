@@ -12,36 +12,51 @@ class Camera {
 public:
   Camera( float verticalFov, float aspectRatio, float nearPlaneDistance, float farPlaneDistance );
 
-  inline glm::mat4 GetTransform() {
-    return pTransform;
+  glm::mat4 GetTransform() {
+    return mTransform;
   }
 
-  inline glm::mat4 GetProjection() {
-    return pProjection;
+  glm::mat4 GetProjection() {
+    return mProjection;
   }
 
-  inline glm::mat4 GetViewMatrix() {
-    return pViewMatrixCache;
+  glm::mat4 GetViewMatrix() {
+    return mViewMatrixCache;
   }
 
-  inline void SetTransform( glm::mat4 transform ) {
-    pTransform = transform;
+  void SetTransform( glm::mat4 transform ) {
+    mTransform = transform;
     UpdateViewMatrixCache();
   }
 
-  inline void SetProjection( glm::mat4 projection ) {
-    pProjection = projection;
+  void SetProjection( glm::mat4 projection ) {
+    mProjection = projection;
     UpdateViewMatrixCache();
   }
 
-  inline void UpdateViewMatrixCache() {
-    pViewMatrixCache = pProjection * glm::inverse(pTransform);
+  void UpdateViewMatrixCache() {
+    mViewMatrixCache = mProjection * glm::inverse(mTransform);
+  }
+
+  float GetVerticalFOV(){
+    return mVerticalFOV;
+  }
+
+  float GetNearDistance(){
+    return mNearDistance;
+  }
+
+  float GetFarDistacne(){
+    return mFarDistance;
   }
 
 private:
-  glm::mat4 pProjection;
-  glm::mat4 pTransform;
-  glm::mat4 pViewMatrixCache;
+  float mVerticalFOV;
+  float mNearDistance;
+  float mFarDistance;
+  glm::mat4 mProjection;
+  glm::mat4 mTransform;
+  glm::mat4 mViewMatrixCache;
 };
 
 

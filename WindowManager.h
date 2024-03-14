@@ -6,6 +6,7 @@
 #define DEV_WINDOWMANAGER_H
 
 #include <memory>
+#include <functional>
 
 // IMPORTANT! Make sure it is imported AFTER glad import
 #include <GLFW/glfw3.h>
@@ -19,26 +20,84 @@ struct Window {
 
 class WindowManager {
 public:
-  WindowManager();
+  WindowManager() {
+    SetMainWindowData( "LearnOpenGL", 1280, 720 );
+  }
 
-  void SetMainWindowData( const char* name, int width, int height );
+  ~WindowManager() {
+    Terminate();
+  }
 
-  inline std::shared_ptr<Window> GetMainWindow() {
+  void SetMainWindowData( const char* name, int width, int height ) {
+    mMainWindow = std::make_shared<Window>();
+
+    mMainWindow->name   = name;
+    mMainWindow->width  = width;
+    mMainWindow->height = height;
+  }
+
+  std::shared_ptr<Window> GetMainWindow() {
     return mMainWindow;
   }
 
-  inline bool ShouldQuit() {
+  bool ShouldQuit() {
     return glfwWindowShouldClose( GetMainWindow()->pointer );
   }
 
-  void InitializeMainWindow();
-  void Terminate();
+  void InitializeMainWindow() {
+    // glfw: initialize and configure
+    // ------------------------------
+    glfwInit();
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
-  void ProcessInput();
-  void ProcessInput( std::shared_ptr<Window> window );
+#ifdef __APPLE__
+    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+#endif
 
-  void SwapAndPoll();
-  void SwapAndPoll( std::shared_ptr<Window> window );
+    // glfw window creation
+    // --------------------
+    mMainWindow->pointer =
+        glfwCreateWindow( mMainWindow->width, mMainWindow->height, mMainWindow->name, nullptr, nullptr );
+
+    if ( mMainWindow->pointer == nullptr ) {
+      // TODO: Add logging
+      glfwTerminate();
+    }
+
+    glfwMakeContextCurrent( mMainWindow->pointer ); // std::shared_ptr.get() returns a raw pointer
+  }
+
+  void SetResizeCallback(GLFWframebuffersizefun callback){
+    glfwSetFramebufferSizeCallback( mMainWindow->pointer, callback);
+  }
+
+  void Terminate() {
+    // Destroy all the windows and terminate
+    glfwTerminate();
+  }
+
+
+  void ProcessInput( std::shared_ptr<Window> window ) {
+    if ( glfwGetKey( window->pointer, GLFW_KEY_ESCAPE ) == GLFW_PRESS ) {
+      glfwSetWindowShouldClose( window->pointer, true );
+    }
+  }
+
+  void ProcessInput() {
+    ProcessInput( GetMainWindow() );
+  }
+
+  void SwapAndPoll( std::shared_ptr<Window> window ) {
+    glfwSwapBuffers( window->pointer );
+    glfwPollEvents();
+  }
+
+  void SwapAndPoll() {
+    SwapAndPoll( GetMainWindow() );
+  }
+
 
 protected:
   std::shared_ptr<Window> mMainWindow;
