@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <fbxsdk.h>
+
 #include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -9,11 +11,13 @@
 #include "common.h"
 #include "utils.h"
 #include "Shader.h"
+#include "Camera.h"
 
 
 // settings
 const unsigned int SCR_WIDTH  = 800;
 const unsigned int SCR_HEIGHT = 600;
+
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -23,6 +27,7 @@ void processInput( GLFWwindow* window ) {
   }
 }
 
+
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebufferSizeCallback( GLFWwindow* window, int width, int height ) {
@@ -31,7 +36,18 @@ void framebufferSizeCallback( GLFWwindow* window, int width, int height ) {
   glViewport( 0, 0, width, height );
 }
 
+
 int main() {
+
+  // Scene to load from file
+  FbxScene* lScene;
+
+  // Load the scene.
+  bool lResult = utils::LoadScene( "resources/stanford-bunny.fbx", lScene );
+
+  std::cout << "Lights in scene: " << lScene->GetSrcObjectCount<FbxLight>() << std::endl;
+  std::cout << "Objects in scene: " << lScene->GetSrcObjectCount<FbxNode>() << std::endl;
+
   // glfw: initialize and configure
   // ------------------------------
   glfwInit();
@@ -61,132 +77,68 @@ int main() {
     return -1;
   }
 
-  // Create shaders
+  // Create, load and compile shaders
   PhongShader phongShader;
 
-  // set up vertex data (and buffer(s)) and configure vertex attributes
-  // ------------------------------------------------------------------
-  std::vector<float> vertices = {
-      // position        // uv
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-      0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-      0.5f, 0.5f, 0.0f, 1.0f, 1.0f,   // top right
-      -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,  // top left
-  };
+  std::vector<Model> models;
 
-  std::vector<int> indices = {
-      // note that we start from 0!
-      0, 1, 2, // first Triangle
-      0, 2, 3, // second Triangle
-  };
+  // Create models on device
+  for ( int oIdx = 0; oIdx < lScene->GetSrcObjectCount<FbxNode>(); oIdx++ ) {
+    FbxNode* node = lScene->GetSrcObject<FbxNode>( oIdx );
 
-  unsigned int VBO, VAO, EBO;
-  glGenVertexArrays( 1, &VAO );
-  glGenBuffers( 1, &VBO );
-  glGenBuffers( 1, &EBO );
-  // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-  glBindVertexArray( VAO );
+    if ( !node->GetMesh() ) {
+      continue;
+    }
 
-  glBindBuffer( GL_ARRAY_BUFFER, VBO );
-  glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * vertices.size(), vertices.data(), GL_STATIC_DRAW );
+    Model newModel;
+    ModelTools::CreateModelFromFbxNode( node, newModel );
 
-  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, EBO );
-  glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( int ) * indices.size(), indices.data(), GL_STATIC_DRAW );
-
-  glVertexAttribPointer( 0, // shader location index
-      3,                    // number of components per attribute
-      GL_FLOAT,
-      GL_FALSE,            // normalized (clamp between -1 to 1)
-      5 * sizeof( float ), // stride in bytes to the next same vertex attribute
-      (void*) 0            // byte size offset for the first component
-  );
-  glEnableVertexAttribArray( 0 );
-
-  glVertexAttribPointer( 1, // shader location index
-      2,                    // number of components per attribute
-      GL_FLOAT,
-      GL_FALSE,                       // normalized
-      5 * sizeof( float ),            // stride in bytes to the next same vertex attribute
-      (void*) ( 3 * sizeof( float ) ) // byte size offset for first component
-  );
-  glEnableVertexAttribArray( 1 );
-
-  // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex
-  // buffer object so afterwards we can safely unbind
-  glBindBuffer( GL_ARRAY_BUFFER, 0 );
-
-  // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep
-  // the EBO bound.
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens.
-  // Modifying other VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when
-  // it's not directly necessary.
-  glBindVertexArray( 0 );
-
-  // Load image data
-  int texWidth, texHeight, texChannels;
-  stbi_set_flip_vertically_on_load( true ); // tell stb_image.h to flip loaded texture's on the y-axis.
-  unsigned char* data = stbi_load( "resources/uv-check.jpg", &texWidth, &texHeight, &texChannels, 0 );
-
-  if ( !data ) {
-    throw "Could not load texture";
+    models.push_back( newModel );
   }
 
-  // Create texture
-  GLuint textureId;
-  glGenTextures( 1, &textureId );
-  glBindTexture( GL_TEXTURE_2D, textureId );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-  glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
-  glGenerateMipmap( GL_TEXTURE_2D );
-
-  stbi_image_free( data );
-
-  // uncomment this call to draw in wireframe polygons.
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // Create a camera to render the scene
+  Camera camera( 65.0f, 1.3333f, 0.001, 1000.0 );
+  camera.SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 500.0f ) ) );
 
   // render loop
   // -----------
+  auto startTime        = Clock::now();
+  double timeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - startTime ).count();
+
+  // Configure opengl depth settings
+  glEnable( GL_DEPTH_TEST ); // ENABLE DEPTH
+  glDepthFunc( GL_LESS );
   while ( !glfwWindowShouldClose( window ) ) {
     // input
     // -----
     processInput( window );
 
+    // Camera rotation around world up (y-axis)
+    float angle    = timeSinceStart / 1000.0f;
+    float distance = 500.0f;
+    glm::mat4 rotated = glm::rotate(glm::mat4(1), angle, {0, 1, 0});
+    glm::mat4 newTransform = glm::translate(rotated, {0, 0, distance});
+
+    camera.SetTransform( newTransform );
+
     // render
     // ------
-    glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClearColor( 0.05f, 0.03f, 0.03f, 1.0f );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, textureId );
-
-    // draw our first triangle
-    phongShader.use();
-    glUniform1i( glGetUniformLocation( textureId, "colorTexture" ), 0 ); // set it manually
-
-    glBindVertexArray( VAO ); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do
-                              // so to keep things a bit more organized
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-    glDrawElements( GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0 );
-    // glBindVertexArray(0); // no need to unbind it every time
+    // Create models on device
+    for ( auto model : models ) {
+      phongShader.Draw( &camera, &model );
+    }
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
     // -------------------------------------------------------------------------------
     glfwSwapBuffers( window );
     glfwPollEvents();
-  }
 
-  // optional: de-allocate all resources once they've outlived their purpose:
-  // ------------------------------------------------------------------------
-  glDeleteVertexArrays( 1, &VAO );
-  glDeleteBuffers( 1, &VBO );
-  glDeleteBuffers( 1, &EBO );
-  phongShader.destroy();
+    // Update time
+    timeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - startTime ).count();
+  }
 
   // glfw: terminate, clearing all previously allocated GLFW resources.
   // ------------------------------------------------------------------

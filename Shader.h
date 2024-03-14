@@ -1,12 +1,16 @@
 #ifndef SHADER_ABSTRACTION_SHADER_H
 #define SHADER_ABSTRACTION_SHADER_H
 
+#include "Model.h"
+#include "Camera.h"
+
 class Shader {
 public:
-  Shader() = default;
+  Shader()  = default;
   ~Shader() = default;
 
-  void use();
+  void Draw(Camera* camera, Model* model);
+
   void destroy() {
     glDeleteProgram( program );
   }

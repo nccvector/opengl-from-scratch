@@ -1,11 +1,20 @@
-#include <glad/glad.h>
-
+#include "glm/gtc/type_ptr.hpp"
 #include "Shader.h"
 #include "utils.h"
 
 
-void Shader::use() {
+void Shader::Draw( Camera* camera, Model* model ) {
+  glm::mat4 modelViewProjection = camera->GetViewMatrix() * model->transform;
   glUseProgram( program );
+  glUniformMatrix4fv(
+      glGetUniformLocation( program, "modelViewProjection" ), 1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
+
+  // Draw all the model meshes
+  for ( Mesh mesh : model->meshes ) {
+    glBindVertexArray( model->meshes[0].VAO );
+//    glDrawElements(GL_TRIANGLES, model->meshes[0].numTriangles, GL_UNSIGNED_INT, 0);
+    glDrawArrays( GL_TRIANGLES, 0, model->meshes[0].numVertices);
+  }
 }
 
 void Shader::loadAndCompile( const char* path, unsigned int shader ) {
