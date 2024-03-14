@@ -12,6 +12,8 @@ Application::Application() {
 
   InitializeGL();
 
+  InitializeGUI();
+
   ResourceManager::InitializeShaders();
 
   LoadScene();
@@ -48,23 +50,6 @@ bool Application::InitializeGL() {
 }
 
 void Application::RenderOneFrame() {
-  // input
-  // -----
-  mWindowManager.ProcessInput();
-
-  // Camera rotation around world up (y-axis)
-  float speed            = 2.0f;
-  float angle            = speed * mTimeSinceStart / 1000.0f;
-  float height           = 0.0f;
-  float distance         = 400.0 + 1.0f * glm::sin( mTimeSinceStart / 100.0f );
-  glm::mat4 rotated      = glm::rotate( glm::mat4( 1 ), angle, { 0, 1, 0 } );
-  glm::mat4 newTransform = glm::translate( rotated, { 0, height, distance } );
-
-  mCamera->SetTransform( newTransform );
-
-  // render
-  // ------
-  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
   // Create models on device
   for ( std::shared_ptr<Model> model : ResourceManager::GetResourceList<Model>() ) {
@@ -81,10 +66,7 @@ void Application::RenderOneFrame() {
     model->Draw();
   }
 
-  // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
-  // etc.)
-  // -------------------------------------------------------------------------------
-  mWindowManager.SwapAndPoll();
+
 }
 
 void Application::LoadScene() {

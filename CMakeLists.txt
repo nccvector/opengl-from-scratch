@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # Specify project and languages (notice: CUDA)
-project(09-application-refactor LANGUAGES C CXX)
+project(dev LANGUAGES C CXX)
 
 # Find OpenGL
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -22,7 +22,26 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/fbxsdk)
 # Add spdlog
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog)
 
+# Add imgui
+set(IMGUI_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
+        ${CMAKE_CURRENT_SOURCE_DIR}/misc/cpp
+)
+
+set(IMGUI_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui_draw.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui_tables.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui_widgets.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/imgui_demo.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends/imgui_impl_opengl3.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends/imgui_impl_glfw.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/misc/cpp/imgui_stdlib.cpp
+)
+
 include_directories(
+        ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/external
         ${CMAKE_CURRENT_SOURCE_DIR}/external/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/external/glad/include
@@ -30,6 +49,7 @@ include_directories(
         ${FBXSDK_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}/external/glm
         ${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog/include
+        ${IMGUI_INCLUDE_DIRS}
 )
 
 # Add cpp and cu files to target. CMake will automatically compile cu with nvcc
@@ -44,9 +64,8 @@ add_executable(${PROJECT_NAME}
         Mesh.cpp
         Model.cpp
         WindowManager.cpp
-        WindowManager.h
         Application.cpp
-        Application.h
+        ${IMGUI_SRCS}
 )
 
 target_link_libraries(${PROJECT_NAME}

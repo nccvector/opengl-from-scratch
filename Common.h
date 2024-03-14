@@ -25,6 +25,10 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+// Add imgui
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds Milliseconds;
