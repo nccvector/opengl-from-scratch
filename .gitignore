@@ -1,7 +1,6 @@
 .idea
 
 build
-dev
 cmake-build-debug
 
 **/nohup.out
