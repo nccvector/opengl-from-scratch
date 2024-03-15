@@ -39,10 +39,11 @@ public:
 
       ResourceManager::InitializeShaders();
 
-      app.LoadScene();
+      //      app.LoadScene();
 
       // Create a camera to render the scene
-      app.mCamera = std::make_shared<Camera>( 65.0f, (float) app.mWindowWidth / (float) app.mWindowHeight, 0.001, 1000.0 );
+      app.mCamera =
+          std::make_shared<Camera>( 65.0f, (float) app.mWindowWidth / (float) app.mWindowHeight, 0.001, 1000.0 );
 
       app.mCamera->SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
     }
@@ -58,9 +59,10 @@ public:
     glViewport( 0, 0, width, height );
 
     // Update camera
-    Application::GetSingleton().mCamera->SetProjection( glm::perspective(
-        Application::GetSingleton().mCamera->GetVerticalFOV(), (float) width / (float) height,
-        Application::GetSingleton().mCamera->GetNearDistance(), Application::GetSingleton().mCamera->GetFarDistacne() ) );
+    Application::GetSingleton().mCamera->SetProjection(
+        glm::perspective( Application::GetSingleton().mCamera->GetVerticalFOV(), (float) width / (float) height,
+            Application::GetSingleton().mCamera->GetNearDistance(),
+            Application::GetSingleton().mCamera->GetFarDistacne() ) );
   }
 
   static void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods ) {
@@ -101,6 +103,7 @@ public:
       ImGui::ShowDemoWindow();
 
       RenderOneFrame();
+      RenderGui();
 
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
@@ -119,17 +122,17 @@ private:
 
   ~Application() {
     // Destroy GUI
-    DEBUG("Destroying GUI");
+    DEBUG( "Destroying GUI" );
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
     // Destroy GL
     // ...
-    DEBUG("Destroying GL");
+    DEBUG( "Destroying GL" );
 
     // Destroy window
-    DEBUG("Destroying Window");
+    DEBUG( "Destroying Window" );
     glfwTerminate();
   }
 
@@ -208,21 +211,54 @@ private:
     }
   }
 
+  void RenderGui() {
+    RenderGuiSceneSelector();
+  }
+
+  void RenderGuiSceneSelector() {
+    ImGui::Begin( "Scene selector" );
+
+    const char* items[] = { "resources/primitives/primitive-sphere.fbx", "resources/primitives/primitive-cube.fbx",
+        "resources/stanford-bunny.fbx", "resources/Sponza2/Sponza.fbx" };
+
+    static const char* selected = items[0];
+
+    if ( ImGui::BeginCombo( "Scene", selected ) ) {
+      for ( int n = 0; n < IM_ARRAYSIZE( items ); n++ ) {
+        if ( ImGui::Selectable( items[n], items[n] == selected ) ) {
+          selected = items[n];
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+
+    if ( ImGui::Button( "Load" ) ) {
+      UnloadCurrentScene();
+      LoadScene( selected );
+    }
+
+    ImGui::End();
+  }
+
   void InitializeTime() {
     // Initialize timers
     mStartTime      = Clock::now();
     mTimeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - mStartTime ).count();
   }
 
-  void LoadScene() {
+  void UnloadCurrentScene(){
+    ResourceManager::textures = {};
+    ResourceManager::materials = {};
+    ResourceManager::meshes = {};
+    ResourceManager::models = {};
+  }
+
+  void LoadScene( const char* sceneFilePath ) {
     // Scene to load from file
     FbxScene* lScene;
 
-    // Load the scene.
-    //  bool lResult = ResourceManager::LoadScene( "resources/primitives/primitive-sphere.fbx", lScene );
-    //  bool lResult = ResourceManager::LoadScene( "resources/primitives/primitive-cube.fbx", lScene );
-    bool lResult = ResourceManager::LoadScene( "resources/stanford-bunny.fbx", lScene );
-    //    bool lResult = ResourceManager::LoadScene( "resources/Sponza2/Sponza.fbx", lScene );
+    bool lResult = ResourceManager::LoadScene( sceneFilePath, lScene );
 
     DEBUG( "Objects in scene: {}", lScene->GetSrcObjectCount<FbxNode>() );
     DEBUG( "Textures in scene: {}", lScene->GetSrcObjectCount<FbxFileTexture>() );
