@@ -63,7 +63,6 @@ add_executable(${PROJECT_NAME}
         Material.cpp
         Mesh.cpp
         Model.cpp
-        WindowManager.cpp
         ${IMGUI_SRCS}
 )
 

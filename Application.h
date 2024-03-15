@@ -8,8 +8,8 @@
 // IMPORTANT: This must be imported before glfw, which is inside WindowManager.h
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
-#include "WindowManager.h"
 #include "ResourceManager.h"
 #include "Camera.h"
 
