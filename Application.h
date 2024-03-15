@@ -21,30 +21,28 @@ public:
   Application( Application const& )    = delete;
   void operator=( Application const& ) = delete;
 
-  static Application& GetInstance() {
+  static Application& GetSingleton() {
     static bool initialized = false;
 
     static Application app;
 
     if ( !initialized ) {
-      initialized = true;   // Mark initialized
+      initialized = true; // Mark initialized
 
-      app.mWindowManager = WindowManager();
-      app.mWindowManager.InitializeMainWindow();
-      app.mWindowManager.SetResizeCallback( Application::ResizeCallback );
-
+      app.InitializeWindow();
       app.InitializeGL();
-
       app.InitializeGUI();
+
+      // Set callbacks
+      glfwSetFramebufferSizeCallback( app.mWindow, Application::ResizeCallback );
+      glfwSetKeyCallback( app.mWindow, Application::KeyCallback );
 
       ResourceManager::InitializeShaders();
 
       app.LoadScene();
 
       // Create a camera to render the scene
-      app.mCamera = std::make_shared<Camera>( 65.0f,
-          (float) app.mWindowManager.GetMainWindow()->width / (float) app.mWindowManager.GetMainWindow()->height, 0.001,
-          1000.0 );
+      app.mCamera = std::make_shared<Camera>( 65.0f, (float) app.mWindowWidth / (float) app.mWindowHeight, 0.001, 1000.0 );
 
       app.mCamera->SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
     }
@@ -60,18 +58,26 @@ public:
     glViewport( 0, 0, width, height );
 
     // Update camera
-    Application::GetInstance().mCamera->SetProjection( glm::perspective(
-        Application::GetInstance().mCamera->GetVerticalFOV(), (float) width / (float) height,
-        Application::GetInstance().mCamera->GetNearDistance(), Application::GetInstance().mCamera->GetFarDistacne() ) );
+    Application::GetSingleton().mCamera->SetProjection( glm::perspective(
+        Application::GetSingleton().mCamera->GetVerticalFOV(), (float) width / (float) height,
+        Application::GetSingleton().mCamera->GetNearDistance(), Application::GetSingleton().mCamera->GetFarDistacne() ) );
+  }
+
+  static void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods ) {
+    DEBUG( "Key pressed: {}", key );
+
+    if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS ) {
+      glfwSetWindowShouldClose( window, true );
+    }
   }
 
   void Run() {
     InitializeTime();
 
     // Render frames in loop
-    while ( !mWindowManager.ShouldQuit() ) {
+    while ( !glfwWindowShouldClose( mWindow ) ) {
       // input
-      mWindowManager.ProcessInput();
+      //      mWindowManager.ProcessInput();
 
       // Update scene graph
       // Camera rotation around world up (y-axis)
@@ -100,7 +106,8 @@ public:
       ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved
-      mWindowManager.SwapAndPoll();
+      glfwSwapBuffers( mWindow );
+      glfwPollEvents();
 
       // Update time
       mTimeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - mStartTime ).count();
@@ -111,7 +118,46 @@ private:
   Application() {}
 
   ~Application() {
-    DestroyGUI();
+    // Destroy GUI
+    DEBUG("Destroying GUI");
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    // Destroy GL
+    // ...
+    DEBUG("Destroying GL");
+
+    // Destroy window
+    DEBUG("Destroying Window");
+    glfwTerminate();
+  }
+
+  bool InitializeWindow( const char* name = "Application", int width = 1280, int height = 720 ) {
+    mWindowWidth  = width;
+    mWindowHeight = height;
+
+    // glfw: initialize and configure
+    // ------------------------------
+    glfwInit();
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+
+#ifdef __APPLE__
+    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+#endif
+
+    // glfw window creation
+    // --------------------
+    mWindow = glfwCreateWindow( width, height, name, nullptr, nullptr );
+
+    if ( mWindow == nullptr ) {
+      ERROR( "Could not create glfw window" );
+      glfwTerminate();
+    }
+
+    glfwMakeContextCurrent( mWindow ); // std::shared_ptr.get() returns a raw pointer
   }
 
   bool InitializeGL() {
@@ -125,7 +171,7 @@ private:
     // Configure opengl depth settings
     glClearColor( 0.025f, 0.015f, 0.015f, 1.0f );
     glEnable( GL_DEPTH_TEST ); // ENABLE DEPTH
-//    glEnable( GL_SCISSOR_TEST );  // Causes rectangle scissor on glfw window
+                               //    glEnable( GL_SCISSOR_TEST );  // Causes rectangle scissor on glfw window
     glEnable( GL_BLEND );
     glDepthFunc( GL_LEQUAL );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -141,14 +187,8 @@ private:
   void InitializeGUI() {
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL( mWindowManager.GetMainWindow()->pointer, true );
+    ImGui_ImplGlfw_InitForOpenGL( mWindow, true );
     ImGui_ImplOpenGL3_Init( "#version 330" );
-  }
-
-  void DestroyGUI() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
   }
 
   void RenderOneFrame() {
@@ -257,12 +297,10 @@ private:
     }
   }
 
-  void Quit() {
-    mWindowManager.Terminate();
-  }
-
 protected:
-  WindowManager mWindowManager;
+  GLFWwindow* mWindow;
+  int mWindowWidth, mWindowHeight;
+
   std::shared_ptr<Camera> mCamera;
 
   std::chrono::time_point<std::chrono::_V2::system_clock, Nanoseconds> mStartTime;

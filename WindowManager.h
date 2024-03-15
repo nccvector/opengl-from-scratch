@@ -45,32 +45,7 @@ public:
   }
 
   void InitializeMainWindow() {
-    // glfw: initialize and configure
-    // ------------------------------
-    glfwInit();
-    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
-    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
-    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
-#ifdef __APPLE__
-    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
-#endif
-
-    // glfw window creation
-    // --------------------
-    mMainWindow->pointer =
-        glfwCreateWindow( mMainWindow->width, mMainWindow->height, mMainWindow->name, nullptr, nullptr );
-
-    if ( mMainWindow->pointer == nullptr ) {
-      // TODO: Add logging
-      glfwTerminate();
-    }
-
-    glfwMakeContextCurrent( mMainWindow->pointer ); // std::shared_ptr.get() returns a raw pointer
-  }
-
-  void SetResizeCallback(GLFWframebuffersizefun callback){
-    glfwSetFramebufferSizeCallback( mMainWindow->pointer, callback);
   }
 
   void Terminate() {
@@ -78,20 +53,8 @@ public:
     glfwTerminate();
   }
 
-
-  void ProcessInput( std::shared_ptr<Window> window ) {
-    if ( glfwGetKey( window->pointer, GLFW_KEY_ESCAPE ) == GLFW_PRESS ) {
-      glfwSetWindowShouldClose( window->pointer, true );
-    }
-  }
-
-  void ProcessInput() {
-    ProcessInput( GetMainWindow() );
-  }
-
   void SwapAndPoll( std::shared_ptr<Window> window ) {
-    glfwSwapBuffers( window->pointer );
-    glfwPollEvents();
+
   }
 
   void SwapAndPoll() {
