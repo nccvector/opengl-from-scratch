@@ -14,6 +14,7 @@
 #include "Camera.h"
 
 #include "Common.h"
+#include "Viewport.h"
 
 
 class Application {
@@ -22,31 +23,8 @@ public:
   void operator=( Application const& ) = delete;
 
   static Application& GetSingleton() {
-    static bool initialized = false;
-
+    // Constructor is only called the first time
     static Application app;
-
-    if ( !initialized ) {
-      initialized = true; // Mark initialized
-
-      app.InitializeWindow();
-      app.InitializeGL();
-      app.InitializeGUI();
-
-      // Set callbacks
-      glfwSetFramebufferSizeCallback( app.mWindow, Application::ResizeCallback );
-      glfwSetKeyCallback( app.mWindow, Application::KeyCallback );
-
-      ResourceManager::InitializeShaders();
-
-      //      app.LoadScene();
-
-      // Create a camera to render the scene
-      app.mCamera =
-          std::make_shared<Camera>( 65.0f, (float) app.mWindowWidth / (float) app.mWindowHeight, 0.001, 1000.0 );
-
-      app.mCamera->SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
-    }
 
     return app;
   }
@@ -57,12 +35,6 @@ public:
     glfwGetFramebufferSize( window, &width, &height );
 
     glViewport( 0, 0, width, height );
-
-    // Update camera
-    Application::GetSingleton().mCamera->SetProjection(
-        glm::perspective( Application::GetSingleton().mCamera->GetVerticalFOV(), (float) width / (float) height,
-            Application::GetSingleton().mCamera->GetNearDistance(),
-            Application::GetSingleton().mCamera->GetFarDistacne() ) );
   }
 
   static void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods ) {
@@ -94,15 +66,25 @@ public:
 
       // render
       // ------
+      // Set viewport as draw target
+      mViewport->SetAsDrawTarget(); // The subsequent draw calls will draw to this viewport
+      glClearColor(0, 0, 0, 1);
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear frame
+      RenderOneFrame();
 
+      // Bind default framebuffer
+      glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+      glClearColor(0, 0, 0, 1);
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear frame
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
 
       ImGui::NewFrame();
       ImGui::ShowDemoWindow();
 
-      RenderOneFrame();
+      // Paint the Viewport with GUI
+      mViewport->DrawGui();
+
       RenderGui();
 
       ImGui::Render();
@@ -118,7 +100,28 @@ public:
   }
 
 private:
-  Application() {}
+  Application() {
+    InitializeWindow();
+    InitializeGL();
+    InitializeGUI();
+
+    // Create a camera to render the scene
+    mCamera = std::make_shared<Camera>( 65.0f, (float) mWindowWidth / (float) mWindowHeight, 0.001, 1000.0 );
+    mCamera->SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
+
+    // Create viewport here
+    // Create render framebuffer
+    mViewport = std::make_shared<Viewport>( "GL Viewport", mWindowWidth, mWindowHeight );
+    mViewport->SetCamera(mCamera);  // Will help adjust camera projection matrix based on viewport resize
+
+    // Set callbacks
+    glfwSetFramebufferSizeCallback( mWindow, Application::ResizeCallback );
+    glfwSetKeyCallback( mWindow, Application::KeyCallback );
+
+    ResourceManager::InitializeShaders();
+
+
+  }
 
   ~Application() {
     // Destroy GUI
@@ -221,7 +224,7 @@ private:
     const char* items[] = { "resources/primitives/primitive-sphere.fbx", "resources/primitives/primitive-cube.fbx",
         "resources/stanford-bunny.fbx", "resources/Sponza2/Sponza.fbx" };
 
-    static const char* selected = items[0];
+    static const char* selected = items[2];
 
     if ( ImGui::BeginCombo( "Scene", selected ) ) {
       for ( int n = 0; n < IM_ARRAYSIZE( items ); n++ ) {
@@ -233,7 +236,9 @@ private:
       ImGui::EndCombo();
     }
 
-    if ( ImGui::Button( "Load" ) ) {
+    static bool startPressed = true;  // Used for loading the currently selected scene for the first time without even pressing the button
+    if ( ImGui::Button( "Load" ) || startPressed ) {
+      startPressed = false;
       UnloadCurrentScene();
       LoadScene( selected );
     }
@@ -247,11 +252,11 @@ private:
     mTimeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - mStartTime ).count();
   }
 
-  void UnloadCurrentScene(){
-    ResourceManager::textures = {};
+  void UnloadCurrentScene() {
+    ResourceManager::textures  = {};
     ResourceManager::materials = {};
-    ResourceManager::meshes = {};
-    ResourceManager::models = {};
+    ResourceManager::meshes    = {};
+    ResourceManager::models    = {};
   }
 
   void LoadScene( const char* sceneFilePath ) {
@@ -334,11 +339,17 @@ private:
   }
 
 protected:
+  // Window
   GLFWwindow* mWindow;
   int mWindowWidth, mWindowHeight;
 
+  // Camera
   std::shared_ptr<Camera> mCamera;
 
+  // Viewport
+  std::shared_ptr<Viewport> mViewport;
+
+  // Time
   std::chrono::time_point<std::chrono::_V2::system_clock, Nanoseconds> mStartTime;
   double mTimeSinceStart;
 };

@@ -4,9 +4,6 @@
 
 #include <iostream>
 
-// GL
-#include <glad/glad.h>
-
 #include "Common.h"
 
 #include "Texture.h"
@@ -34,6 +31,10 @@ Texture::Texture( const char* name, const char* filePath ) {
 
   // Free image data from host
   stbi_image_free( data );
+}
+
+Texture::~Texture(){
+  glDeleteTextures(1, &mHandle);
 }
 
 void Texture::CreateFromData( const char* name, unsigned char* data, int width, int height, int channels ) {

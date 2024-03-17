@@ -12,6 +12,11 @@ class Camera {
 public:
   Camera( float verticalFov, float aspectRatio, float nearPlaneDistance, float farPlaneDistance );
 
+  void Resize( int width, int height ) {
+    SetProjection(
+        glm::perspective( GetVerticalFOV(), (float) width / (float) height, GetNearDistance(), GetFarDistacne() ) );
+  }
+
   glm::mat4 GetTransform() {
     return mTransform;
   }
@@ -35,18 +40,18 @@ public:
   }
 
   void UpdateViewMatrixCache() {
-    mViewMatrixCache = mProjection * glm::inverse(mTransform);
+    mViewMatrixCache = mProjection * glm::inverse( mTransform );
   }
 
-  float GetVerticalFOV(){
+  float GetVerticalFOV() {
     return mVerticalFOV;
   }
 
-  float GetNearDistance(){
+  float GetNearDistance() {
     return mNearDistance;
   }
 
-  float GetFarDistacne(){
+  float GetFarDistacne() {
     return mFarDistance;
   }
 
