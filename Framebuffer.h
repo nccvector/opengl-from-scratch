@@ -43,6 +43,9 @@ public:
   }
 
   void Resize(int width, int height){
+    mWidth = width;
+    mHeight = height;
+
     // Delete
     glDeleteFramebuffers(1, &mHandle);
 
@@ -75,6 +78,8 @@ public:
       ERROR( "Framebuffer resize failed, Framebuffer incomplete" );
       throw "FAILED FRAMEBUFFER";
     }
+
+    DEBUG("Frame buffer resized");
   }
 
   void Bind() {
@@ -87,6 +92,14 @@ public:
 
   inline const unsigned int GetRenderTextureHandle(){
     return mRenderTexture->GetHandle();
+  }
+
+  int GetWidth(){
+    return mWidth;
+  }
+
+  int GetHeight(){
+    return mHeight;
   }
 
 protected:

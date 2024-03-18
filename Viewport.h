@@ -14,6 +14,8 @@ public:
     mName        = name;
     mWidth       = width;
     mHeight      = height;
+    mCropWidth   = width;
+    mCropHeight  = height;
     mFramebuffer = std::make_shared<Framebuffer>( "Render Framebuffer", mWidth, mHeight );
     mCamera      = nullptr;
   }
@@ -23,6 +25,7 @@ public:
     // Otherwise OpenGL will draw on bigger or smaller bounds
     // Hence, parts of the drawn image will go outside the viewport
     glViewport( 0, 0, mWidth, mHeight );
+
     mFramebuffer->Bind();
   }
 
@@ -32,7 +35,8 @@ public:
 
   void DrawGui() {
     ImGui::Begin( mName );
-    ImGui::Image( (void*) ( GetRenderTextureHandle() ), { (float) mWidth, (float) mHeight }, {0, 1}, {1, 0} );
+    ImGui::Image(
+        (void*) ( GetRenderTextureHandle() ), { (float) mCropWidth, (float) mCropHeight }, { 0, 1 }, { 1, 0 } );
 
     // Update widht and height to handle resizing of the draw region (mHeight and mWidth will be used
     // by SetAsDrawTarget in the next frame.
@@ -40,20 +44,18 @@ public:
     ImVec2 maxRegion = ImGui::GetWindowContentRegionMax();
     ImVec2 size      = { maxRegion.x - minRegion.x, maxRegion.y - minRegion.y };
 
-    if ( size.x != mWidth || size.y != mHeight ) {
-      mWidth  = size.x;
-      mHeight = size.y;
+    if ( size.x != mCropWidth || size.y != mCropHeight ) {
+      mCropWidth  = size.x;
+      mCropHeight = size.y;
 
-      // Resize the framebuffer (but avoid at first frame)
-      static bool firstframe = true;
-      if ( !firstframe ) {
-        mFramebuffer->Resize( mWidth, mHeight );
+      if ( mCropWidth > mFramebuffer->GetWidth() || mCropWidth > mFramebuffer->GetHeight() ) {
+        ERROR( "Viewport frame buffer maximum size reached! Framebuffer resize is not implemented. You might experience pixelated rendering." );
       }
-      firstframe = false;
 
       // Re-adjust the camera if it's not NULL
       if ( mCamera ) {
-        mCamera->Resize( mWidth, mHeight );
+        DEBUG( "RESIZING CAMERA" );
+        mCamera->Resize( mCropWidth, mCropHeight );
       }
     }
 
@@ -65,17 +67,19 @@ public:
   }
 
   float GetWidth() {
-    return mWidth;
+    return mCropWidth;
   }
 
   float GetHeight() {
-    return mHeight;
+    return mCropHeight;
   }
 
 protected:
   const char* mName;
   float mWidth;
   float mHeight;
+  float mCropWidth;
+  float mCropHeight;
   std::shared_ptr<Framebuffer> mFramebuffer;
   std::shared_ptr<Camera> mCamera;
 };

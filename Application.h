@@ -68,13 +68,13 @@ public:
       // ------
       // Set viewport as draw target
       mViewport->SetAsDrawTarget(); // The subsequent draw calls will draw to this viewport
-      glClearColor(0, 0, 0, 1);
+      glClearColor( 0, 0, 0, 1 );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear frame
       RenderOneFrame();
 
       // Bind default framebuffer
       glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-      glClearColor(0, 0, 0, 1);
+      glClearColor( 0, 0, 0, 1 );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear frame
       ImGui_ImplOpenGL3_NewFrame();
       ImGui_ImplGlfw_NewFrame();
@@ -111,16 +111,14 @@ private:
 
     // Create viewport here
     // Create render framebuffer
-    mViewport = std::make_shared<Viewport>( "GL Viewport", mWindowWidth, mWindowHeight );
-    mViewport->SetCamera(mCamera);  // Will help adjust camera projection matrix based on viewport resize
+    mViewport = std::make_shared<Viewport>( "GL Viewport", mWindowWidth * 2, mWindowHeight * 2 );
+    mViewport->SetCamera( mCamera ); // Will help adjust camera projection matrix based on viewport resize
 
     // Set callbacks
     glfwSetFramebufferSizeCallback( mWindow, Application::ResizeCallback );
     glfwSetKeyCallback( mWindow, Application::KeyCallback );
 
     ResourceManager::InitializeShaders();
-
-
   }
 
   ~Application() {
@@ -236,7 +234,8 @@ private:
       ImGui::EndCombo();
     }
 
-    static bool startPressed = true;  // Used for loading the currently selected scene for the first time without even pressing the button
+    static bool startPressed =
+        true; // Used for loading the currently selected scene for the first time without even pressing the button
     if ( ImGui::Button( "Load" ) || startPressed ) {
       startPressed = false;
       UnloadCurrentScene();
