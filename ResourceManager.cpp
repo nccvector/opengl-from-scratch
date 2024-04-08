@@ -11,73 +11,85 @@
 
 namespace ResourceManager {
 
-std::shared_ptr<PhongShader> defaultShader       = nullptr;
-std::vector<std::shared_ptr<Texture>> textures   = {};
-std::vector<std::shared_ptr<Material>> materials = {};
-std::vector<std::shared_ptr<Mesh>> meshes        = {};
-std::vector<std::shared_ptr<Model>> models       = {};
+std::shared_ptr<PhongShader> _defaultShader       = nullptr;
+std::vector<std::shared_ptr<Texture>> _textures   = {};
+std::vector<std::shared_ptr<Material>> _materials = {};
+std::vector<std::shared_ptr<Mesh>> _meshes        = {};
+std::vector<std::shared_ptr<Model>> _models       = {};
 
-void InitializeShaders() {
-  defaultShader = std::make_shared<PhongShader>();
+void reinitializeResources() { // Used for reloading a different scene
+  _textures  = {};
+  _materials = {};
+  _meshes    = {};
+  _models    = {};
 }
 
-void EnsureShaderActiveState( std::shared_ptr<PhongShader> shader ) {
-  // Deactivate currently bound shader before activing new one
+std::shared_ptr<PhongShader> getDefaultShader() {
+  return _defaultShader;
+}
+
+
+void initializeShaders() {
+  _defaultShader = std::make_shared<PhongShader>();
+}
+
+void ensureShaderActiveState( const std::shared_ptr<PhongShader>& shader ) {
+  // deactivate currently bound shader before activing new one
   // currentShader.Deativate();
   // curretnShader = shader;
-  if ( !shader->IsActive() ) {
-    shader->Activate();
+  if ( !shader->isActive() ) {
+    shader->activate();
   }
 }
 
 template <typename T>
-std::vector<std::shared_ptr<T>> GetResourceList() {}
+std::vector<std::shared_ptr<T>> getResourceList() {}
 
 template <>
-std::vector<std::shared_ptr<Texture>> GetResourceList<Texture>() {
-  return textures;
+std::vector<std::shared_ptr<Texture>> getResourceList<Texture>() {
+  return _textures;
 }
 
 template <>
-std::vector<std::shared_ptr<Material>> GetResourceList<Material>() {
-  return materials;
+std::vector<std::shared_ptr<Material>> getResourceList<Material>() {
+  return _materials;
 }
 
 template <>
-std::vector<std::shared_ptr<Mesh>> GetResourceList<Mesh>() {
-  return meshes;
+std::vector<std::shared_ptr<Mesh>> getResourceList<Mesh>() {
+  return _meshes;
 }
 
 template <>
-std::vector<std::shared_ptr<Model>> GetResourceList<Model>() {
-  return models;
+std::vector<std::shared_ptr<Model>> getResourceList<Model>() {
+  return _models;
 }
 
 template <typename T>
-void AddResource( const std::shared_ptr<T>& resource ) {}
+void addResource( const std::shared_ptr<T>& resource ) {}
 
 template <>
-void AddResource<Texture>( const std::shared_ptr<Texture>& resource ) {
-  textures.push_back( resource );
+void addResource<Texture>( const std::shared_ptr<Texture>& resource ) {
+  _textures.push_back( resource );
 }
 
 template <>
-void AddResource<Material>( const std::shared_ptr<Material>& resource ) {
-  materials.push_back( resource );
+void addResource<Material>( const std::shared_ptr<Material>& resource ) {
+  _materials.push_back( resource );
 }
 
 template <>
-void AddResource<Mesh>( const std::shared_ptr<Mesh>& resource ) {
-  meshes.push_back( resource );
+void addResource<Mesh>( const std::shared_ptr<Mesh>& resource ) {
+  _meshes.push_back( resource );
 }
 
 template <>
-void AddResource<Model>( const std::shared_ptr<Model>& resource ) {
-  models.push_back( resource );
+void addResource<Model>( const std::shared_ptr<Model>& resource ) {
+  _models.push_back( resource );
 }
 
 
-void LoadFile( const char* filePath, std::string& out ) {
+void loadFile( const char* filePath, std::string& out ) {
   std::ifstream t( filePath );
   out = std::string( ( std::istreambuf_iterator<char>( t ) ), std::istreambuf_iterator<char>() );
 }
@@ -88,7 +100,7 @@ void LoadFile( const char* filePath, std::string& out ) {
 #define IOS_REF ( *( lSdkManager->GetIOSettings() ) )
 #endif
 
-bool LoadScene( const char* path, FbxScene*& scene ) {
+bool loadScene( const char* path, FbxScene*& scene ) {
   // SETTING UP FBX RESOURCES
   // FBX SDK Default Manager
   FbxManager* lSdkManager = FbxManager::Create();
@@ -139,8 +151,7 @@ bool LoadScene( const char* path, FbxScene*& scene ) {
 
     if ( lImporter->GetStatus().GetCode() == FbxStatus::eInvalidFileVersion ) {
       DEBUG( "FBX file format version for this FBX SDK is {}.{}.{}\n", lSDKMajor, lSDKMinor, lSDKRevision );
-      DEBUG(
-          "FBX file format version for file '%s' is {}.{}.{}\n\n", path, lFileMajor, lFileMinor, lFileRevision );
+      DEBUG( "FBX file format version for file '%s' is {}.{}.{}\n\n", path, lFileMajor, lFileMinor, lFileRevision );
     }
 
     return false;
@@ -149,8 +160,7 @@ bool LoadScene( const char* path, FbxScene*& scene ) {
   DEBUG( "FBX file format version for this FBX SDK is {}.{}.{}\n", lSDKMajor, lSDKMinor, lSDKRevision );
 
   if ( lImporter->IsFBX() ) {
-    DEBUG(
-        "FBX file format version for file '%s' is {}.{}.{}", path, lFileMajor, lFileMinor, lFileRevision );
+    DEBUG( "FBX file format version for file '%s' is {}.{}.{}", path, lFileMajor, lFileMinor, lFileRevision );
 
     // From this point, it is possible to access animation stack information without
     // the expense of loading the entire file.
@@ -191,7 +201,7 @@ bool LoadScene( const char* path, FbxScene*& scene ) {
 
   // Import the scene.
   lStatus = lImporter->Import( scene );
-  if ( lStatus == false && lImporter->GetStatus() == FbxStatus::ePasswordError ) {
+  if ( !lStatus && lImporter->GetStatus() == FbxStatus::ePasswordError ) {
     FBXSDK_printf( "Please enter password: " );
 
     lPassword[0] = '\0';
@@ -207,7 +217,7 @@ bool LoadScene( const char* path, FbxScene*& scene ) {
 
     lStatus = lImporter->Import( scene );
 
-    if ( lStatus == false && lImporter->GetStatus() == FbxStatus::ePasswordError ) {
+    if ( !lStatus && lImporter->GetStatus() == FbxStatus::ePasswordError ) {
       ERROR( "\nPassword is wrong, import aborted.\n" );
     }
   }

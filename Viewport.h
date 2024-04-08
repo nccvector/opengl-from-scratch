@@ -20,26 +20,26 @@ public:
     mCamera      = nullptr;
   }
 
-  void SetAsDrawTarget() {
+  void setAsDrawTarget() {
     // Tell OpenGL to draw with the same size as this viewport
     // Otherwise OpenGL will draw on bigger or smaller bounds
     // Hence, parts of the drawn image will go outside the viewport
     glViewport( 0, 0, mWidth, mHeight );
 
-    mFramebuffer->Bind();
+    mFramebuffer->bind();
   }
 
-  unsigned int GetRenderTextureHandle() {
-    return mFramebuffer->GetRenderTextureHandle();
+  unsigned int getRenderTextureHandle() {
+    return mFramebuffer->getRenderTextureHandle();
   }
 
-  void DrawGui() {
+  void drawGui() {
     ImGui::Begin( mName );
     ImGui::Image(
-        (void*) ( GetRenderTextureHandle() ), { (float) mCropWidth, (float) mCropHeight }, { 0, 1 }, { 1, 0 } );
+        (void*) ( getRenderTextureHandle() ), { (float) mCropWidth, (float) mCropHeight }, { 0, 1 }, { 1, 0 } );
 
     // Update widht and height to handle resizing of the draw region (mHeight and mWidth will be used
-    // by SetAsDrawTarget in the next frame.
+    // by setAsDrawTarget in the next frame.
     ImVec2 minRegion = ImGui::GetWindowContentRegionMin();
     ImVec2 maxRegion = ImGui::GetWindowContentRegionMax();
     ImVec2 size      = { maxRegion.x - minRegion.x, maxRegion.y - minRegion.y };
@@ -48,29 +48,29 @@ public:
       mCropWidth  = size.x;
       mCropHeight = size.y;
 
-      if ( mCropWidth > mFramebuffer->GetWidth() || mCropWidth > mFramebuffer->GetHeight() ) {
+      if ( mCropWidth > mFramebuffer->getWidth() || mCropWidth > mFramebuffer->getHeight() ) {
         ERROR( "Viewport frame buffer maximum size reached! Framebuffer resize is not implemented. You might experience pixelated rendering." );
       }
 
       // Re-adjust the camera if it's not NULL
       if ( mCamera ) {
         DEBUG( "RESIZING CAMERA" );
-        mCamera->Resize( mCropWidth, mCropHeight );
+        mCamera->resize( mCropWidth, mCropHeight );
       }
     }
 
     ImGui::End();
   }
 
-  void SetCamera( const std::shared_ptr<Camera>& camera ) {
+  void setCamera( const std::shared_ptr<Camera>& camera ) {
     mCamera = camera;
   }
 
-  float GetWidth() {
+  [[nodiscard]] float getWidth() const {
     return mCropWidth;
   }
 
-  float GetHeight() {
+  [[nodiscard]] float getHeight() const {
     return mCropHeight;
   }
 

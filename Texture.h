@@ -18,36 +18,36 @@ public:
 
   ~Texture();
 
-  void CreateFromData( const char* name, unsigned char* data, int width, int height, int channels );
+  void createFromData( const char* name, unsigned char* data, int width, int height, int channels );
 
   inline void Resize(int width, int height){
-    // Detete the current GL texture and create a new handle
+    // Delete the current GL texture and create a new handle
     glDeleteTextures(1, &mHandle);
 
-    CreateFromData(mName, nullptr, width, height, mChannels);
+    createFromData( mName, nullptr, width, height, mChannels );
   }
 
-  inline const char* GetName() {
+  inline const char* getName() {
     return mName;
   }
 
-  inline const int GetWidth(){
+  [[nodiscard]] inline int getWidth() const{
     return mWidth;
   }
 
-  inline const int GetHeight() {
+  [[nodiscard]] inline int getHeight() const {
     return mHeight;
   }
 
-  inline const int GetNumChannels() {
+  [[maybe_unused]] [[nodiscard]] inline int getNumChannels() const {
     return mChannels;
   }
 
-  inline const unsigned int GetHandle() {
+  [[nodiscard]] inline unsigned int getHandle() const {
     return mHandle;
   }
 
-  inline bool IsCreatedOnDevice() {
+  [[nodiscard]] inline bool isCreatedOnDevice() const {
     return mCreatedOnDevice;
   }
 

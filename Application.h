@@ -22,7 +22,7 @@ public:
   Application( Application const& )    = delete;
   void operator=( Application const& ) = delete;
 
-  static Application& GetSingleton() {
+  static Application& getSingleton() {
     // Constructor is only called the first time
     static Application app;
 
@@ -46,7 +46,7 @@ public:
   }
 
   void Run() {
-    InitializeTime();
+    initializeTime();
 
     // Render frames in loop
     while ( !glfwWindowShouldClose( mWindow ) ) {
@@ -62,17 +62,17 @@ public:
       glm::mat4 rotated      = glm::rotate( glm::mat4( 1 ), angle, { 0, 1, 0 } );
       glm::mat4 newTransform = glm::translate( rotated, { 0, height, distance } );
 
-      mCamera->SetTransform( newTransform );
+      mCamera->setTransform( newTransform );
 
       // render
       // ------
       // Set viewport as draw target
-      mViewport->SetAsDrawTarget(); // The subsequent draw calls will draw to this viewport
+      mViewport->setAsDrawTarget(); // The subsequent draw calls will draw to this viewport
       glClearColor( 0, 0, 0, 1 );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear frame
-      RenderOneFrame();
+      renderOneFrame();
 
-      // Bind default framebuffer
+      // bind default framebuffer
       glBindFramebuffer( GL_FRAMEBUFFER, 0 );
       glClearColor( 0, 0, 0, 1 );
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); // clear frame
@@ -83,9 +83,9 @@ public:
       ImGui::ShowDemoWindow();
 
       // Paint the Viewport with GUI
-      mViewport->DrawGui();
+      mViewport->drawGui();
 
-      RenderGui();
+      renderGui();
 
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
@@ -101,24 +101,24 @@ public:
 
 private:
   Application() {
-    InitializeWindow();
-    InitializeGL();
-    InitializeGUI();
+    initializeWindow();
+    initializeGl();
+    initializeGui();
 
     // Create a camera to render the scene
     mCamera = std::make_shared<Camera>( 65.0f, (float) mWindowWidth / (float) mWindowHeight, 0.001, 1000.0 );
-    mCamera->SetTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
+    mCamera->setTransform( glm::translate( glm::mat4( 1.0f ), glm::vec3( 0.0f, 0.0f, 5.0f ) ) );
 
     // Create viewport here
     // Create render framebuffer
     mViewport = std::make_shared<Viewport>( "GL Viewport", mWindowWidth * 2, mWindowHeight * 2 );
-    mViewport->SetCamera( mCamera ); // Will help adjust camera projection matrix based on viewport resize
+    mViewport->setCamera( mCamera ); // Will help adjust camera projection matrix based on viewport resize
 
     // Set callbacks
     glfwSetFramebufferSizeCallback( mWindow, Application::ResizeCallback );
     glfwSetKeyCallback( mWindow, Application::KeyCallback );
 
-    ResourceManager::InitializeShaders();
+    ResourceManager::initializeShaders();
   }
 
   ~Application() {
@@ -137,7 +137,7 @@ private:
     glfwTerminate();
   }
 
-  bool InitializeWindow( const char* name = "Application", int width = 1280, int height = 720 ) {
+  bool initializeWindow( const char* name = "Application", int width = 1280, int height = 720 ) {
     mWindowWidth  = width;
     mWindowHeight = height;
 
@@ -164,7 +164,7 @@ private:
     glfwMakeContextCurrent( mWindow ); // std::shared_ptr.get() returns a raw pointer
   }
 
-  bool InitializeGL() {
+  bool initializeGl() {
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if ( !gladLoadGLLoader( (GLADloadproc) glfwGetProcAddress ) ) {
@@ -188,35 +188,36 @@ private:
     return true;
   }
 
-  void InitializeGUI() {
+  void initializeGui() {
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL( mWindow, true );
     ImGui_ImplOpenGL3_Init( "#version 330" );
   }
 
-  void RenderOneFrame() {
+  void renderOneFrame() {
     // Create models on device
-    for ( std::shared_ptr<Model> model : ResourceManager::GetResourceList<Model>() ) {
+    for ( std::shared_ptr<Model> model : ResourceManager::getResourceList<Model>() ) {
       // Activate shader
-      ResourceManager::EnsureShaderActiveState( ResourceManager::defaultShader );
+      ResourceManager::ensureShaderActiveState( ResourceManager::getDefaultShader() );
 
       // Set Model View Projection
-      glm::mat4 modelViewProjection = mCamera->GetViewMatrix() * model->GetTransform();
-      glUniformMatrix4fv( glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "modelViewProjection" ),
-          1, GL_FALSE, glm::value_ptr( modelViewProjection ) );
+      glm::mat4 modelViewProjection = mCamera->getViewMatrix() * model->getTransform();
+      glUniformMatrix4fv(
+          glGetUniformLocation( ResourceManager::getDefaultShader()->getProgram(), "modelViewProjection" ), 1, GL_FALSE,
+          glm::value_ptr( modelViewProjection ) );
       glUniform1f(
-          glGetUniformLocation( ResourceManager::defaultShader->GetProgram(), "time" ), (float) mTimeSinceStart );
+          glGetUniformLocation( ResourceManager::getDefaultShader()->getProgram(), "time" ), (float) mTimeSinceStart );
 
       model->Draw();
     }
   }
 
-  void RenderGui() {
-    RenderGuiSceneSelector();
+  void renderGui() {
+    renderGuiSceneSelector();
   }
 
-  void RenderGuiSceneSelector() {
+  void renderGuiSceneSelector() {
     ImGui::Begin( "Scene selector" );
 
     const char* items[] = { "resources/primitives/primitive-sphere.fbx", "resources/primitives/primitive-cube.fbx",
@@ -238,31 +239,28 @@ private:
         true; // Used for loading the currently selected scene for the first time without even pressing the button
     if ( ImGui::Button( "Load" ) || startPressed ) {
       startPressed = false;
-      UnloadCurrentScene();
-      LoadScene( selected );
+      unloadCurrentScene();
+      loadScene( selected );
     }
 
     ImGui::End();
   }
 
-  void InitializeTime() {
+  void initializeTime() {
     // Initialize timers
     mStartTime      = Clock::now();
     mTimeSinceStart = std::chrono::duration_cast<Milliseconds>( Clock::now() - mStartTime ).count();
   }
 
-  void UnloadCurrentScene() {
-    ResourceManager::textures  = {};
-    ResourceManager::materials = {};
-    ResourceManager::meshes    = {};
-    ResourceManager::models    = {};
+  void unloadCurrentScene() {
+    ResourceManager::reinitializeResources();
   }
 
-  void LoadScene( const char* sceneFilePath ) {
+  void loadScene( const char* sceneFilePath ) {
     // Scene to load from file
     FbxScene* lScene;
 
-    bool lResult = ResourceManager::LoadScene( sceneFilePath, lScene );
+    bool lResult = ResourceManager::loadScene( sceneFilePath, lScene );
 
     DEBUG( "Objects in scene: {}", lScene->GetSrcObjectCount<FbxNode>() );
     DEBUG( "Textures in scene: {}", lScene->GetSrcObjectCount<FbxFileTexture>() );
@@ -278,12 +276,12 @@ private:
       std::shared_ptr<Texture> newTexture = std::make_shared<Texture>( texture->GetName(), texture->GetFileName() );
 
       // Check success
-      if ( !newTexture->IsCreatedOnDevice() ) {
+      if ( !newTexture->isCreatedOnDevice() ) {
         continue;
       }
 
       // Register in resource manager
-      ResourceManager::AddResource<Texture>( newTexture );
+      ResourceManager::addResource<Texture>( newTexture );
     }
 
     // Loading materials from scene
@@ -294,10 +292,10 @@ private:
 
       // Create material
       std::shared_ptr<Material> newMaterial = std::make_shared<Material>( material->GetName() );
-      newMaterial->CreateFromFbxSurfaceMaterial( material );
+      newMaterial->createFromFbxSurfaceMaterial( material );
 
       // Register in resource manager
-      ResourceManager::AddResource<Material>( newMaterial );
+      ResourceManager::addResource<Material>( newMaterial );
     }
 
     // Create models
@@ -311,8 +309,8 @@ private:
 
       // Material for new mesh
       std::shared_ptr<Material> mat = nullptr;
-      for ( const std::shared_ptr<Material>& testMaterial : ResourceManager::GetResourceList<Material>() ) {
-        if ( strcmp( testMaterial->GetName(), node->GetMaterial( 0 )->GetName() ) == 0 ) {
+      for ( const std::shared_ptr<Material>& testMaterial : ResourceManager::getResourceList<Material>() ) {
+        if ( strcmp( testMaterial->getName(), node->GetMaterial( 0 )->GetName() ) == 0 ) {
           mat = testMaterial;
           break;
         }
@@ -321,19 +319,19 @@ private:
       // Create new material if it does not exist
       if ( mat == nullptr ) {
         std::shared_ptr<Material> newMaterial = std::make_shared<Material>( node->GetMaterial( 0 )->GetName() );
-        newMaterial->CreateFromFbxSurfaceMaterial( node->GetMaterial( 0 ) );
+        newMaterial->createFromFbxSurfaceMaterial( node->GetMaterial( 0 ) );
       }
 
       // Create mesh for this model
       std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>( node->GetName(), mat );
-      newMesh->CreateFromFbxMesh( node->GetMesh() );
+      newMesh->createFromFbxMesh( node->GetMesh() );
 
       // Creating model
       std::shared_ptr<Model> newModel = std::make_shared<Model>( node->GetName(), newMesh );
 
       // Register in resource manager
-      ResourceManager::AddResource<Mesh>( newMesh );
-      ResourceManager::AddResource<Model>( newModel );
+      ResourceManager::addResource<Mesh>( newMesh );
+      ResourceManager::addResource<Model>( newModel );
     }
   }
 

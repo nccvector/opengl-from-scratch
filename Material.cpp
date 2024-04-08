@@ -13,7 +13,7 @@ Material::Material( const char* name, glm::vec3 color ) {
   mName = name;
 
   // Assign default shader on creation
-  mShader = ResourceManager::defaultShader;
+  mShader = ResourceManager::getDefaultShader();
 
   // Initialize textures
   DEBUG("Creating 1x1 texture for material: ", mName);
@@ -30,7 +30,7 @@ Material::Material( const char* name, glm::vec3 color ) {
 
   if ( newTexture != nullptr ) {
     // Add to global list
-    ResourceManager::AddResource( newTexture );
+    ResourceManager::addResource( newTexture );
     // Assign to model mesh
     mTextures[DIFFUSE] = newTexture;
   }
@@ -38,7 +38,7 @@ Material::Material( const char* name, glm::vec3 color ) {
   mTextures[NORMAL]  = nullptr;
 }
 
-void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
+void Material::createFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
   for ( int texTypeInt = DIFFUSE; texTypeInt < TEXTURETYPE_NUM_ITEMS; texTypeInt++ ) {
     static const char* fbxPropType;
     static const char* fbxFactorType;
@@ -78,8 +78,8 @@ void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
       if ( lFileTextureCount ) {
         fileTexture = prop.GetSrcObject<FbxFileTexture>();
 
-        for ( std::shared_ptr<Texture> texture : ResourceManager::GetResourceList<Texture>() ) {
-          if ( strcmp( fileTexture->GetName(), texture->GetName() ) == 0 ) {
+        for ( std::shared_ptr<Texture> texture : ResourceManager::getResourceList<Texture>() ) {
+          if ( strcmp( fileTexture->GetName(), texture->getName() ) == 0 ) {
             DEBUG("Assigning texture {} to material {}", fileTexture->GetName(), mName);
             mTextures[texTypeInt] = texture;
           }
@@ -107,7 +107,7 @@ void Material::CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material ) {
 
         if ( newTexture != nullptr ) {
           // Add to global list
-          ResourceManager::AddResource( newTexture );
+          ResourceManager::addResource( newTexture );
           // Assign to model mesh
           mTextures[texTypeInt] = newTexture;
         }

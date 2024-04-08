@@ -11,30 +11,30 @@ public:
   Shader()  = default;
   ~Shader() = default;
 
-  void destroy() {
+  void destroy() const {
     glDeleteProgram( program );
   }
 
-  inline unsigned int GetProgram(){
+  [[nodiscard]] inline unsigned int getProgram() const{
     return program;
   }
 
-  inline bool IsActive(){
+  [[nodiscard]] inline bool isActive() const{
     return mActive;
   }
 
-  inline void Activate(){
+  inline void activate(){
     glUseProgram( program );
     mActive = true;
   }
 
-  inline void Deactivate(){
+  inline void deactivate(){
     glUseProgram(0);
     mActive = false;
   }
 
 protected:
-  void LoadAndCompile( const char* path, unsigned int shader );
+  static void loadAndCompile( const char* path, unsigned int shader );
   unsigned int program;
   bool mActive = false;
 };

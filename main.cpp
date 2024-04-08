@@ -6,5 +6,5 @@ int main(){
 //  spdlog::set_pattern("[source %s] [function %!] [line %#] %v");
   spdlog::set_level(spdlog::level::trace);
 
-  Application::GetSingleton().Run();
+  Application::getSingleton().Run();
 }

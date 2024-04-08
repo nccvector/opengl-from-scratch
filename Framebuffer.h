@@ -29,7 +29,7 @@ public:
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuffer);
 
     // Attach render texture
-    glFramebufferTexture( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mRenderTexture->GetHandle(), 0 );
+    glFramebufferTexture( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mRenderTexture->getHandle(), 0 );
 
     // Set the list of draw buffers.
     GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
@@ -42,7 +42,7 @@ public:
     }
   }
 
-  void Resize(int width, int height){
+  void resize(int width, int height){
     mWidth = width;
     mHeight = height;
 
@@ -67,7 +67,7 @@ public:
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuffer);
 
     // Reattach render texture
-    glFramebufferTexture( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mRenderTexture->GetHandle(), 0 );
+    glFramebufferTexture( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, mRenderTexture->getHandle(), 0 );
 
     // Set the list of draw buffers.
     GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
@@ -82,23 +82,23 @@ public:
     DEBUG("Frame buffer resized");
   }
 
-  void Bind() {
+  void bind() const {
     glBindFramebuffer( GL_FRAMEBUFFER, mHandle );
   }
 
-  std::shared_ptr<Texture> GetRenderTexture(){
+  [[maybe_unused]] std::shared_ptr<Texture> getRenderTexture(){
     return mRenderTexture;
   }
 
-  inline const unsigned int GetRenderTextureHandle(){
-    return mRenderTexture->GetHandle();
+  inline unsigned int getRenderTextureHandle(){
+    return mRenderTexture->getHandle();
   }
 
-  int GetWidth(){
+  [[nodiscard]] int getWidth() const{
     return mWidth;
   }
 
-  int GetHeight(){
+  [[nodiscard]] int getHeight() const{
     return mHeight;
   }
 

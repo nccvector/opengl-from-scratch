@@ -12,46 +12,46 @@ class Camera {
 public:
   Camera( float verticalFov, float aspectRatio, float nearPlaneDistance, float farPlaneDistance );
 
-  void Resize( int width, int height ) {
-    SetProjection(
-        glm::perspective( GetVerticalFOV(), (float) width / (float) height, GetNearDistance(), GetFarDistacne() ) );
+  void resize( int width, int height ) {
+    setProjection(
+        glm::perspective( getVerticalFov(), (float) width / (float) height, getNearDistance(), getFarDistance() ) );
   }
 
-  glm::mat4 GetTransform() {
+  [[maybe_unused]] glm::mat4 getTransform() {
     return mTransform;
   }
 
-  glm::mat4 GetProjection() {
+  [[maybe_unused]] glm::mat4 getProjection() {
     return mProjection;
   }
 
-  glm::mat4 GetViewMatrix() {
+  glm::mat4 getViewMatrix() {
     return mViewMatrixCache;
   }
 
-  void SetTransform( glm::mat4 transform ) {
+  void setTransform( glm::mat4 transform ) {
     mTransform = transform;
-    UpdateViewMatrixCache();
+    updateViewMatrixCache();
   }
 
-  void SetProjection( glm::mat4 projection ) {
+  void setProjection( glm::mat4 projection ) {
     mProjection = projection;
-    UpdateViewMatrixCache();
+    updateViewMatrixCache();
   }
 
-  void UpdateViewMatrixCache() {
+  void updateViewMatrixCache() {
     mViewMatrixCache = mProjection * glm::inverse( mTransform );
   }
 
-  float GetVerticalFOV() {
+  [[nodiscard]] float getVerticalFov() const {
     return mVerticalFOV;
   }
 
-  float GetNearDistance() {
+  [[nodiscard]] float getNearDistance() const {
     return mNearDistance;
   }
 
-  float GetFarDistacne() {
+  [[nodiscard]] float getFarDistance() const {
     return mFarDistance;
   }
 

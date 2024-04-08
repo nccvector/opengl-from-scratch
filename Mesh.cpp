@@ -9,19 +9,19 @@
 
 void Mesh::Draw() {
   // Activate shader
-  ResourceManager::EnsureShaderActiveState( mMaterial->GetShader() );
+  ResourceManager::ensureShaderActiveState( mMaterial->getShader() );
 
-  // Bind texture of this mesh
-  if ( mMaterial->GetTextures()[DIFFUSE] ) {
+  // bind texture of this mesh
+  if ( mMaterial->getTextures()[DIFFUSE] ) {
     glActiveTexture( GL_TEXTURE0 );
-    glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureDiffuse" ), DIFFUSE );
-    glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[DIFFUSE]->GetHandle() );
+    glUniform1i( glGetUniformLocation( mMaterial->getShader()->getProgram(), "TextureDiffuse" ), DIFFUSE );
+    glBindTexture( GL_TEXTURE_2D, mMaterial->getTextures()[DIFFUSE]->getHandle() );
   }
 
-  if ( mMaterial->GetTextures()[NORMAL] ) {
+  if ( mMaterial->getTextures()[NORMAL] ) {
     glActiveTexture( GL_TEXTURE1 );
-    glUniform1i( glGetUniformLocation( mMaterial->GetShader()->GetProgram(), "TextureNormal" ), NORMAL );
-    glBindTexture( GL_TEXTURE_2D, mMaterial->GetTextures()[NORMAL]->GetHandle() );
+    glUniform1i( glGetUniformLocation( mMaterial->getShader()->getProgram(), "TextureNormal" ), NORMAL );
+    glBindTexture( GL_TEXTURE_2D, mMaterial->getTextures()[NORMAL]->getHandle() );
   }
 
   glBindVertexArray( mVAO );
@@ -35,12 +35,12 @@ Mesh::Mesh( const char* name, const std::shared_ptr<Material>& material ) {
   mMaterial = material;
 }
 
-void Mesh::CreateOnHost( const std::vector<Vertex>& vertices ) {
+void Mesh::createOnHost( const std::vector<Vertex>& vertices ) {
   mVertices    = vertices;
   mNumVertices = mVertices.size();
 }
 
-void Mesh::CreateOnDevice() {
+void Mesh::createOnDevice() {
   glGenVertexArrays( 1, &( mVAO ) );
   glGenBuffers( 1, &( mVBO ) );
 
@@ -95,18 +95,18 @@ void Mesh::CreateOnDevice() {
   glBindVertexArray( 0 );
 }
 
-void Mesh::CreateFromVertices( std::vector<Vertex> vertices ) {
-    CreateOnHost( vertices );
-    CreateOnDevice();
-    // ReleaseFromHost();    // Free vertices memory
+void Mesh::createFromVertices( const std::vector<Vertex>& vertices ) {
+  createOnHost( vertices );
+  createOnDevice();
+  // ReleaseFromHost();    // Free vertices memory
 }
 
-void Mesh::CreateFromFbxMesh( FbxMesh* mesh ) {
-  std::vector<Vertex> vertices = GetVerticesFromFbxMesh( mesh );
-  CreateFromVertices(vertices);
+void Mesh::createFromFbxMesh( FbxMesh* mesh ) {
+  std::vector<Vertex> vertices = getVerticesFromFbxMesh( mesh );
+  createFromVertices( vertices );
 }
 
-std::vector<Vertex> Mesh::GetVerticesFromFbxMesh( FbxMesh* mesh ) {
+std::vector<Vertex> Mesh::getVerticesFromFbxMesh( FbxMesh* mesh ) {
   // ================================================================================
   // Load mesh
   // ================================================================================
@@ -118,7 +118,7 @@ std::vector<Vertex> Mesh::GetVerticesFromFbxMesh( FbxMesh* mesh ) {
   // Declare memory for mesh
   std::vector<Vertex> vertices;
 
-  int vertexCount = mesh->GetControlPointsCount();
+  [[maybe_unused]] int vertexCount = mesh->GetControlPointsCount();
   int indexCount  = mesh->GetPolygonVertexCount();
 
   // Copy indices to model

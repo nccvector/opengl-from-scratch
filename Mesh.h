@@ -18,20 +18,20 @@ class Mesh {
 public:
   Mesh( const char* name, const std::shared_ptr<Material>& material );
 
-  void CreateFromVertices(std::vector<Vertex> vertices);
-  void CreateFromFbxMesh( FbxMesh* mesh );
-  std::vector<Vertex> GetVerticesFromFbxMesh( FbxMesh* mesh );
+  void createFromVertices(const std::vector<Vertex>& vertices);
+  void createFromFbxMesh( FbxMesh* mesh );
+  static std::vector<Vertex> getVerticesFromFbxMesh( FbxMesh* mesh );
 
-  void CreateOnHost( const std::vector<Vertex>& vertices );
-  void CreateOnDevice();
+  void createOnHost( const std::vector<Vertex>& vertices );
+  void createOnDevice();
 
-  inline const char* GetName() {
+  [[maybe_unused]] inline const char* getName() {
     return mName;
   }
 
   void Draw();
 
-  inline void SetMaterial( const std::shared_ptr<Material>& material ) {
+  [[maybe_unused]] inline void setMaterial( const std::shared_ptr<Material>& material ) {
     mMaterial = material;
   }
 

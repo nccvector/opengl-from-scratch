@@ -2,10 +2,7 @@
 // Created by vector on 24/03/08.
 //
 
-#include <iostream>
-
 #include "Common.h"
-
 #include "Texture.h"
 
 // Image read write headers
@@ -13,7 +10,7 @@
 #include "stb_image_write.h"
 
 Texture::Texture( const char* name, unsigned char* data, int width, int height, int channels ) {
-  CreateFromData( name, data, width, height, channels );
+  createFromData( name, data, width, height, channels );
 }
 
 Texture::Texture( const char* name, const char* filePath ) {
@@ -27,7 +24,7 @@ Texture::Texture( const char* name, const char* filePath ) {
 
   DEBUG("Successfully loaded texture from disk: {}", filePath);
 
-  CreateFromData( name, data, width, height, channels );
+  createFromData( name, data, width, height, channels );
 
   // Free image data from host
   stbi_image_free( data );
@@ -37,7 +34,7 @@ Texture::~Texture(){
   glDeleteTextures(1, &mHandle);
 }
 
-void Texture::CreateFromData( const char* name, unsigned char* data, int width, int height, int channels ) {
+void Texture::createFromData( const char* name, unsigned char* data, int width, int height, int channels ) {
 #ifdef DEBUG_DUMP_TEXTURES
   // Write this texture to disk
   std::string buf( name );

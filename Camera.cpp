@@ -10,5 +10,5 @@ Camera::Camera( float verticalFov, float aspectRatio, float nearPlaneDistance, f
   mFarDistance = farPlaneDistance;
   mProjection = glm::perspective( verticalFov, aspectRatio, nearPlaneDistance, farPlaneDistance );
   mTransform  = glm::mat4(1.0f);
-  UpdateViewMatrixCache();
+  updateViewMatrixCache();
 }

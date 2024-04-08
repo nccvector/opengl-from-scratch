@@ -19,12 +19,12 @@ class Model {
 public:
   Model( const char* name, std::shared_ptr<Mesh> mesh );
 
-  inline glm::mat4& GetTransform() {
+  inline glm::mat4& getTransform() {
     return mTransform;
   }
 
   inline void Draw() {
-    for ( std::shared_ptr<Mesh> mesh : mMeshes ) {
+    for ( const std::shared_ptr<Mesh>& mesh : mMeshes ) {
       mesh->Draw();
     }
   }

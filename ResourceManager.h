@@ -12,28 +12,26 @@
 #include "Mesh.h"
 #include "Model.h"
 
-// Resources which need access from multiple consumers (But becareful to only mutate in only one place, the rest of the
+// Resources which need access from multiple consumers (But be-careful to only mutate in only one place, the rest of the
 // places should only consume)
 namespace ResourceManager {
 
-extern std::shared_ptr<PhongShader> defaultShader;
-extern std::vector<std::shared_ptr<Texture>> textures;
-extern std::vector<std::shared_ptr<Material>> materials;
-extern std::vector<std::shared_ptr<Mesh>> meshes;
-extern std::vector<std::shared_ptr<Model>> models;
+void reinitializeResources(); // Used for reloading a different scene
+
+std::shared_ptr<PhongShader> getDefaultShader();
 
 template <typename T>
-std::vector<std::shared_ptr<T>> GetResourceList();
+std::vector<std::shared_ptr<T>> getResourceList();
 
 template <typename T>
-void AddResource( const std::shared_ptr<T>& resource );
+void addResource( const std::shared_ptr<T>& resource );
 
-void InitializeShaders();
-void EnsureShaderActiveState( std::shared_ptr<PhongShader> shader );
+void initializeShaders();
+void ensureShaderActiveState( const std::shared_ptr<PhongShader>& shader );
 
-void LoadFile( const char* filePath, std::string& out );
+void loadFile( const char* filePath, std::string& out );
 
-bool LoadScene( const char* path, FbxScene*& scene );
+bool loadScene( const char* path, FbxScene*& scene );
 
 } // namespace ResourceManager
 

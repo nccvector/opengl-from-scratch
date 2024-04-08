@@ -14,17 +14,17 @@ class Material {
 public:
   Material( const char* name, glm::vec3 color = glm::vec3( 1 ) );
 
-  void CreateFromFbxSurfaceMaterial( FbxSurfaceMaterial* material );
+  void createFromFbxSurfaceMaterial( FbxSurfaceMaterial* material );
 
-  inline const char* GetName() {
+  inline const char* getName() {
     return mName;
   }
 
-  inline std::shared_ptr<Texture>* GetTextures() {
+  inline std::shared_ptr<Texture>* getTextures() {
     return mTextures;
   }
 
-  inline std::shared_ptr<PhongShader> GetShader() {
+  inline std::shared_ptr<PhongShader> getShader() {
     return mShader;
   }
 
